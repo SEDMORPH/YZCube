@@ -1,0 +1,19 @@
+This is the README for the SEDM2 code
+=====================================
+
+VW 14 July 2016
+
+The code is run from sedm2_run.pro
+Keywords need to be set for the code to do anything
+/GASSFH = compute and store the gas and new star SFHs. This needs to be done before anything else will run. Currently only VW can run this, as the files are stored with the gadget-3 output. 
+/SDSSIMAGE = compute SDSS-style images. Default is 1'. Use keyword IMAGESIZE to change this
+/HYPERION = compute output files for hyperion
+More options will be added soon. 
+
+The Gadget-3 data is in /Users/vw8/data/SEDMORPH/SimnsGadget3/
+The output from the code is currently set to go to  /Users/vw8/data/SEDMORPH/SimnsGadget3_output/
+
+ALL directories should now be set in the sedm2_directories.inc file. This can then be stored locally to avoid the swapping of directories everytime a new version is pulled from bitbucket!
+
+
+
