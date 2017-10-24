@@ -27,7 +27,7 @@ PRO SEDM2_SDSSMOVIE, dir_in, dir_out, redshift, tauv, mu_d, imagesize,orientatio
         if j+1 gt norien then MESSAGE, 'GO BACK TO SDSSIMAGE AND COMPUTE MORE ORIENTATIONS (TURN OFF /FACEON KEYWORD)'
         
 ;        SEDM_RGBIM,  reform(image_noise[*,*,j,*]),[3,2,1],rgbim=rgbim
-        SEDM_RGBIM,  reform(image_noise_dust[*,*,j,*]),[3,2,1],rgbim=rgbim
+        SEDM2_RGBIM,  reform(image_noise_dust[*,*,j,*]),[3,2,1],rgbim=rgbim
         image = cgsnapshot(Filename=moviefile_image, /GIF,/multiple, repeat_count=0, delay_time=20,/nodialog)
 
         ;color_im = color_quan(RGBim[*,*,0], RGBim[*,*,1], RGBim[*,*,2], rmap, gmap, bmap)
