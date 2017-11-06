@@ -93,7 +93,7 @@ PRO SEDM2_HYP_OUTPUT, fileseq, models_dir,indir=indir, outdir=outdir
   Z = '62'                      ;solar
   stem = models_dir + 'bc2003_hr_m'
   file_ssps = stem + Z + '_chab_ssp.ised'
-  seds = SEDM_READISED(file_ssps, t, lambda)   
+  seds = SEDM2_READISED(file_ssps, t, lambda)   
   age_ssp = t/1e9               ; in Gyr to match simns
   nlambda = n_elements(lambda)
   nage = n_elements(age_ssp)
