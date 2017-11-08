@@ -83,7 +83,7 @@ PRO SEDM2_READSNAP, filename,  stars=stars, gas=gas, halo=halo, sfr=sfr, snap_ti
 
   if NHalo gt 0 and keyword_set(gethalo) then begin
      halo = replicate({x:0.0, y:0.0, z:0.0, mass:0.0, vx:0.0, vy:0.0, vz:0.0, $
-                       id:0,pot:0.0}, Nhalo)
+                       id:0L,pot:0.0}, Nhalo)
      DMCoordinates = H5D_READ(H5D_OPEN(file_id, 'PartType1/Coordinates'))
      DMParticleIDs =  H5D_READ(H5D_OPEN(file_id, 'PartType1/ParticleIDs'))
      DMVelocity =  H5D_READ(H5D_OPEN(file_id, 'PartType1/Velocities'))
