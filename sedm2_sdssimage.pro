@@ -199,7 +199,7 @@ PRO SEDM2_SDSSIMAGE, dir_in, dir_out, dir_filters, dir_code, filterlist, redshif
      norien = 1
   endif else rotate = SEDM2_ROTATE(fileseq,norien,seed=rotate_seed) ;norien is output
 
-;;-- decide the nx and ny note the grid!!! The grids need to generate for every orientation seperately
+;;-- decide the nx and ny note the grid!!! The grids need to be generated for every orientation seperately
   SEDM2_SDSSGRID, xx,yy,nx,ny,redshift,imagesize=imagesize
   
 
