@@ -199,9 +199,9 @@ PRO SEDM2_SDSSIMAGE, dir_in, dir_out, dir_filters, dir_code, filterlist, redshif
      norien = 1
   endif else rotate = SEDM2_ROTATE(fileseq,norien,seed=rotate_seed) ;norien is output
 
-;;-- set up image grid
+;;-- decide the nx and ny note the grid!!! The grids need to generate for every orientation seperately
   SEDM2_SDSSGRID, xx,yy,nx,ny,redshift,imagesize=imagesize
-  print, 'grid details:', 'z=',redshift, 'starting point=',min(xx),'nx=',nx
+  
 
 ;;-- distance to the galaxy
   dist = lumdist(redshift,H0=hubparam*100,omega_m=omega_m,lambda=omega_l,/silent)*Mpc_in_cm
@@ -223,6 +223,16 @@ PRO SEDM2_SDSSIMAGE, dir_in, dir_out, dir_filters, dir_code, filterlist, redshif
   time = systime(1)
 
   mass_young = dblarr(nsnap,norien)
+  
+  ;;------------yrzheng, for a moving box
+  ;; read in the centers list for all snapshots
+  temp =  file_search(dir_in+'*_???.hdf5',count=tot_nsnap)
+  centerlist = fltarr(6, tot_nsnap)
+
+  openr, centertxt, dir_in+'centers.txt', /get_lun
+  readf, centertxt, centerlist
+  free_lun, centertxt
+
 
   for i=0, nsnap-1 do begin ;Nsnap-1 do begin
      tmp = (strsplit(filename[i],'/',/extract,count=n))[n-1]
@@ -274,6 +284,13 @@ PRO SEDM2_SDSSIMAGE, dir_in, dir_out, dir_filters, dir_code, filterlist, redshif
 ;;   images in jansky. ~10 secs
 ;;------------------------------------------------------------------
         time = systime(1)
+        
+        ;;---use the center of the first halo as the center of the grid
+        snapnum = round(float(str_snap))
+        two_center = centerlist[*, snapnum]
+        center = two_center[0:2]
+        SEDM2_SDSSGRID, xx,yy,nx,ny,redshift, imagesize=imagesize, center =  center, rotate = rotate[*,*,j]
+        print, 'grid details:', 'z=',redshift, 'starting point=',min(xx),'nx=',nx
 
         SEDM2_ZSUM, nx, ny, xx, yy, gas, stars, ind_newstars, ind_oldstars, gassfh, newstarsfh, rotate[*,*,j], dist, $ ;input
                     ssps_lum, age_ssp, ll_eff, tau_young, tau_old, $                             ;SSPs
