@@ -74,7 +74,7 @@ END
 ;; output: xx,yy,nx,ny
 ;; input: redshift
 
-PRO SEDM2_SDSSGRID,xx,yy,nx,ny,redshift, imagesize=imagesize
+PRO SEDM2_SDSSGRID,xx,yy,nx,ny,redshift, imagesize=imagesize, center=center, rotate=rotate
   
   @sedm2_codeunits.inc          ;H, Om, Ol
 
@@ -105,5 +105,16 @@ PRO SEDM2_SDSSGRID,xx,yy,nx,ny,redshift, imagesize=imagesize
   
   ny = nx
   yy = xx
+  
+  ;;----------set a moving box
+  if not(KEYWORD_SET(center)) then center = [0, 0, 0]
+
+  if (KEYWORD_SET(rotate)) then $
+    center = transpose(rotate ## center)
+    print, "rotated_center", center
+
+  xx = xx + center[0]
+  yy = yy + center[1]
+
 
 END
