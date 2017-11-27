@@ -105,15 +105,15 @@ FUNCTION FIND_DIVIDING_POINT, sorted_idhalo, partnum_ratio=partnum_ratio
 
   ;;Change the partnum_ratio to float type to ensure the accuracy
   partnum_ratio = float(partnum_ratio)
-  print, "partnum_ratio in FIND_DIVIDING_POINT:", partnum_ratio
+  ;print, "partnum_ratio in FIND_DIVIDING_POINT:", partnum_ratio
 
   ;;NOTE: some particles may not be read in the SEDM2_READSNAP, the tot_partnum
   ;;cannot be get by n_elements(sorted_idhalo)
   tot_partnum = ( sorted_idhalo[-1] - sorted_idhalo[0] + 1 )
-  print, "tot_partnum",tot_partnum
+  ;print, "tot_partnum",tot_partnum
   ;;the ID of real Dividing_point
   DP_id =round(sorted_idhalo[0] + tot_partnum*( partnum_ratio/(1.0+partnum_ratio) ))
-  print, "DP_id=",DP_id
+  print, "Halo.id of the first particle of the second halo",DP_id
 
 
   ;;NOTE: the particle at the real Dividing_point may not be read into the halo
@@ -223,7 +223,7 @@ if NOT(keyword_set(halo)) then begin
 	SEDM2_READSNAP, indir+fname, halo=halo,/gethalo
 endif
 
-if NOY(KEYWORD_SET(fileseq)) then begin
+if NOT(KEYWORD_SET(fileseq)) then begin
   print, "Please set the fileseq for finding centers"
   return, separation=-1.
 endif
