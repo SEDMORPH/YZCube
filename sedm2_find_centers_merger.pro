@@ -210,7 +210,7 @@ END
 
 
 
-FUNCTION SEDM2_FIND_CENTERS_MERGER, fname, indir=indir, halo=halo, silent=silent
+FUNCTION SEDM2_FIND_CENTERS_MERGER, fname, fileseq=fileseq, indir=indir, halo=halo, silent=silent
 
 ;; Set everything up 
 
@@ -223,6 +223,10 @@ if NOT(keyword_set(halo)) then begin
 	SEDM2_READSNAP, indir+fname, halo=halo,/gethalo
 endif
 
+if NOY(KEYWORD_SET(fileseq)) then begin
+  print, "Please set the fileseq for finding centers"
+  return, separation=-1.
+endif
 
 NHalo  = n_elements(halo.x)
 
@@ -247,6 +251,8 @@ sorted_pothalo=pothalo(sort_id_halo)
 sorted_xhalo=xhalo(sort_id_halo)
 sorted_yhalo=yhalo(sort_id_halo)
 sorted_zhalo=zhalo(sort_id_halo)
+
+
 
 ratio = FIND_PARTNUM_RATIO(fileseq)
 print, "Particle number ratio of first halo to the second one:", ratio
