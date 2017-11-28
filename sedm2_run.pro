@@ -50,7 +50,10 @@
 ;-
 
 
-PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu_d, sdssimage=sdssimage,imagesize=imagesize, faceon=faceon, sfrmovie=sfrmovie, sdssmovie=sdssmovie, hyperion=hyperion, gassfh = gassfh,  movieorientation=movieorientation,spectra=spectra,pca=pca
+PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu_d, $
+    sdssimage=sdssimage,imagesize=imagesize, faceon=faceon, sfrmovie=sfrmovie, sdssmovie=sdssmovie, $
+    hyperion=hyperion, gassfh = gassfh,  movieorientation=movieorientation,spectra=spectra,pca=pca, $
+    centerslist=centerslist
 
   if n_elements(fileseq) eq 0 then begin
      print, 'please provide input file sequence'
@@ -94,6 +97,11 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
 ;; Create output files for Hyperion
 ;;------------------------------------------------------------------
   if keyword_set(hyperion) then SEDM2_HYP_OUTPUT, fileseq, dir_models, indir=dir_in, outdir=dir_out
+
+;;------------------------------------------------------------------
+;; Calculate centers of the two halo for all snapshots
+;;------------------------------------------------------------------
+  if KEYWORD_SET(centerslist) then SEDM2_centerslist, fileseq, indir=dir_in, outdir=dir_out
 
 
 ;;------------------------------------------------------------------
