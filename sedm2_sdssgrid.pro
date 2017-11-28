@@ -111,7 +111,7 @@ PRO SEDM2_SDSSGRID,xx,yy,nx,ny,redshift, imagesize=imagesize, center=center, rot
 
   if (KEYWORD_SET(rotate)) then $
     center = transpose(rotate ## center)
-    print, "rotated_center", center
+    ;print, "rotated_center", center
 
   xx = xx + center[0]
   yy = yy + center[1]
