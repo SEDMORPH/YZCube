@@ -94,7 +94,11 @@ PRO SEDM2_GASSFH, fileseq, indir, outdir=outdir, quiet=quiet,  $
 ;; TO DO: added to evernote
 ;; BC_str,'62' need to be passed in from calling routine so we can
 ;; change the SSPs. Ideally need to be a single input too.  
-  tmp = SEDM_GETSSPS(model_str,'62', models_dir=models_dir) 
+;;===========================% Keyword MODELS_DIR not allowed in call to: SEDM2_GETSSPS
+  ;tmp = SEDM2_GETSSPS(model_str,'62', models_dir=models_dir) ;origin
+  tmp= SEDM2_GETSSPS(models_dir, model_str,'62')
+  ;repalce the origin line with that find in sdssimage
+;;===========================yrzheng
   age_ssp = tmp.age & tmp=0     ;in Gyr
   nssps = n_elements(age_ssp)
   delta_age_ssp = age_ssp[findgen(nssps-1)+1]-age_ssp[findgen(nssps-1)] ; in Gyr
