@@ -101,7 +101,7 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
 ;;------------------------------------------------------------------
 ;; Calculate centers of the two halo for all snapshots
 ;;------------------------------------------------------------------
-  if KEYWORD_SET(centerslist) then SEDM2_centerslist, fileseq, indir=dir_in, outdir=dir_out
+  if KEYWORD_SET(centerslist) then SEDM2_centerslist, fileseq, indir=dir_in, outdir=dir_in
 
 
 ;;------------------------------------------------------------------
