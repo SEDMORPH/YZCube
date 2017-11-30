@@ -74,7 +74,7 @@ PRO SEDM2_CENTERSLIST, fileseq, indir=indir, outdir=outdir
   endfor
 
 
-  openw, lun, fileseq+'_centers.txt', /get_lun
+  openw, lun, outdir+'centers.txt', /get_lun
   printf, lun, cen_list
   free_lun, lun
 
