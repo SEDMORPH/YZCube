@@ -1,5 +1,5 @@
 PRO SEDM2_SPEC, dir_in, dir_out, tauv,mu_d, $
-                snap = snapID, model_str=model_str, $
+                snap = snap_in, model_str=model_str, $
                 models_dir=dir_models
 
 ;;------------------------------------------------------------------
