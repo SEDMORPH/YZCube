@@ -37,7 +37,7 @@ FUNCTION FIND_PARTNUM_RATIO, fileseq
   if ( fileseqlist[0] eq '2') AND (fileseqlist[1] eq 'x') then $
     return, ratio = 1.0
 
-;;Otherwise, this should be a minor merger, the smaller galaxy
+;;Otherwise, this might be a minor merger, the smaller galaxy
 ;;should be indcated with a "p" follow the Hubble type
 ;;The mass ratio of the larger galaxy to the smaller one follows "p"
 ;;The first galaxy comes before the character "_"
@@ -49,6 +49,9 @@ FUNCTION FIND_PARTNUM_RATIO, fileseq
     if (fileseqlist[i] eq '_') then SmallerFirst = 0; boolean(0)
     if (fileseqlist[i] eq 'p') then begin
       ratio = float( strmid(fileseq, i+1))
+      if ratio eq 0 then $
+       print, "Unable to decide the particle number ratio, please check the fileseq!" & $
+       print, "Set the ratio to 0. as an error symbol."
       if SmallerFirst then ratio = 1.0/ratio
       return, ratio
     endif
@@ -61,6 +64,12 @@ FUNCTION FIND_PARTNUM_RATIO, fileseq
 
 
 ;;----If neither of above two situations is met,
+;;----it should be a major merger that the two galaxies belong to diffrerent Hubble type.
+;;----There should be two '_' and no 'p' in the fileseq
+  temp=where(fileseqlist eq '_', count)
+  if count eq 2 then return, ratio=1.0
+
+;;----None of above situations is met
 ;;----return the default 0 as an error symbol
   print, "Unable to decide the particle number ratio, please check the fileseq!"
   print, "Set the ratio to 0. as an error symbol."
@@ -183,7 +192,7 @@ END
 ;	SEDM2_FIND_CENTERS_MERGER
 ;
 ; PURPOSE:
-;       This procedure finds the central coordinates of two colliding galaxies 
+;       This procedure finds the central coordinates of two colliding galaxies
 ;
 ; CALLING SEQUENCE:
 ;
@@ -191,13 +200,13 @@ END
 ;
 ; INPUTS:
 ;	fname: Filename to be read in
-; 
-; OPTIONAL INPUT: 
+;
+; OPTIONAL INPUT:
 ;		indir: Directory in which the file is located
 ;       Hubparam: Value of Hubble parameter/100 (default is 0.71)
-;	
+;
 ; OUTPUT:
-;		separation: a 7 dimensional array: 
+;		separation: a 7 dimensional array:
 ;		separation[0:2] = coordinates of center_1
 ;		separation[3:5] = coordinates of center_2
 ;		separation[6] = separation between centers (sqrt(center_1^2 + center_2^2))
@@ -212,9 +221,9 @@ END
 
 FUNCTION SEDM2_FIND_CENTERS_MERGER, fname, fileseq=fileseq, indir=indir, halo=halo, silent=silent
 
-;; Set everything up 
+;; Set everything up
 
-;; If this procedure is run with halo already defined then we don't need to read the 
+;; If this procedure is run with halo already defined then we don't need to read the
 ;; file in again, i.e. if this is being called from hyp_output
 if NOT(keyword_set(halo)) then begin
 	if NOT(KEYWORD_SET(indir)) then indir='./'
