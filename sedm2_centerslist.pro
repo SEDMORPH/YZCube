@@ -62,6 +62,8 @@ PRO SEDM2_CENTERSLIST, fileseq, indir=indir, outdir=outdir
   cen_list = fltarr(6, Nsnap)
 
   for i=0,Nsnap-1 do begin
+  ;for i=0,2 do begin
+
 
      ;;----We only need halo for finding centers
      SEDM2_READSNAP, indir+filename[i], halo=halo,/gethalo

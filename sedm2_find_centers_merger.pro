@@ -49,9 +49,10 @@ FUNCTION FIND_PARTNUM_RATIO, fileseq
     if (fileseqlist[i] eq '_') then SmallerFirst = 0; boolean(0)
     if (fileseqlist[i] eq 'p') then begin
       ratio = float( strmid(fileseq, i+1))
-      if ratio eq 0 then $
-       print, "Unable to decide the particle number ratio, please check the fileseq!" & $
+      if ratio eq 0 then begin
+       print, "Unable to decide the particle number ratio, please check the fileseq!"
        print, "Set the ratio to 0. as an error symbol."
+     endif
       if SmallerFirst then ratio = 1.0/ratio
       return, ratio
     endif

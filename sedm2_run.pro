@@ -4,7 +4,7 @@
 ;
 ; PURPOSE:
 ;	Builds images and spectra, and compile output files to run
-;	through hyperion. 
+;	through hyperion.
 ;
 ;
 ; CALLING SEQUENCE:
@@ -12,10 +12,10 @@
 ;	SEDM_RUN, [fileseq], snapID=snapID
 ;
 ;
-; OPTIONAL INPUT: 
+; OPTIONAL INPUT:
 ;
 ;       FILESEQ: default '2xSab_00_vw'
-;	
+;
 ; KEYWORD PARAMETERS:
 ;
 ;       SNAPID: default all
@@ -23,44 +23,44 @@
 ;       TAUV: default 1.0
 ;       MU_D: default 0.3
 ;
-;       SDSSIMAGE: =1 to create a mock SDSS image. Note that z!=0. 
+;       SDSSIMAGE: =1 to create a mock SDSS image. Note that z!=0.
 ;       IMAGESIZE: For SDSSIMAGE: default 1; in arcmin
 ;
 ; EXAMPLE:
 ;       SEDM2_RUN, snapID=75,/skipgas
 ;
 ;
-; DEPENDENCIES: 
-;        hyp_readsnap 
+; DEPENDENCIES:
+;        hyp_readsnap
 ;        sedm_readised.pro
 ;        sedm_buildsed.pro
 ;        sedm_mocksdssimage.pro
 ;        sedm_mocksdssimage_movie.pro
 ;        hyp_gassfh.pro
 ;	 sedm_spec.pro
-; 
-; NOTES:  
+;
+; NOTES:
 ;       sedm2_codeunits.inc  contains code units, cosmology and conversions
 ;       sedm2_directories.inc contains directories
-;  
+;
 ; MODIFICATION HISTORY:
 ; 	Written by:	Vivienne Wild July 2015, based on an older
-; 	pre-hyperion version. 
-;	
+; 	pre-hyperion version.
+;
 ;-
 
 
 PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu_d, $
     sdssimage=sdssimage,imagesize=imagesize, faceon=faceon, sfrmovie=sfrmovie, sdssmovie=sdssmovie, $
     hyperion=hyperion, gassfh = gassfh,  movieorientation=movieorientation,spectra=spectra,pca=pca, $
-    centerslist=centerslist
+    centerslist=centerslist, cen_spectra=cen_spectra
 
   if n_elements(fileseq) eq 0 then begin
      print, 'please provide input file sequence'
      return
   endif
 
-;fileseq = '2xSab_00_vw' 
+;fileseq = '2xSab_00_vw'
 
 ;;------------------------------------------------------------------
 ;;-- Fixed parameters and variables
@@ -107,36 +107,45 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
 ;;------------------------------------------------------------------
 ;; Create mock SDSS images
 ;;------------------------------------------------------------------
-  
+
   if keyword_Set(sdssimage) then begin
      if redshift eq 0 then message, 'Redshift must be >0 to make an image'
 
      filterlist = 'sdss.lis'
-     if n_elements(imagesize) eq 0 then imagesize=1. 
+     if n_elements(imagesize) eq 0 then imagesize=1.
 
      SEDM2_sdssimage, dir_in, dir_out, dir_filters,dir_code,filterlist, redshift, tauv,mu_d, imagesize,$
                       snap = snapID, model_str=model_str, $
                       models_dir=dir_models,rotate_seed=rotate_seed, faceon=faceon
 
   endif
- 
+
 
 ;;------------------------------------------------------------------
 ;; Create total optical spectra
 ;;------------------------------------------------------------------
-  
+
   if keyword_Set(spectra) then SEDM2_spec, dir_in, dir_out,tauv,mu_d, $
                                            snap = snapID, model_str=model_str, models_dir=dir_models
+
+
+
+;;------------------------------------------------------------------
+;; Create  optical spectra for the center 1kpc part
+;;------------------------------------------------------------------
+
+ if keyword_Set(cen_spectra) then SEDM2_cen_spec, dir_in, dir_out,tauv,mu_d, $
+                                          snap = snapID, model_str=model_str, models_dir=dir_models
 
 
 ;;------------------------------------------------------------------
 ;; Create spectral indices
 ;;------------------------------------------------------------------
-  
+
   if keyword_Set(pca) then SEDM2_pca, dir_in, dir_out, tauv, mu_d;, snap = snapID
 
-  
-  
+
+
 ;;------------------------------------------------------------------
 ;; Create movies: this relies on image and SED files already being made
 ;;------------------------------------------------------------------
@@ -148,12 +157,12 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
   if keyword_set(sdssmovie) then begin
      if n_elements(imagesize) eq 0 then imagesize=1.
      if n_elements(movieorientation) eq 0 then movieorientation=0 ;face-on
-     
+
      SEDM2_sdssmovie, dir_in, dir_out, redshift, tauv, mu_d,imagesize, movieorientation
   endif
 
   ;;-- optical spectra movies
 
 
-  
+
 END

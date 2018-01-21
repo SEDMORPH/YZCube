@@ -3,3 +3,5 @@ sedm2_directories.inc*
 nohup.out
 *~
 command.sh
+*.sh
+*.out

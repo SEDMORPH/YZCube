@@ -172,17 +172,32 @@ PRO SEDM2_SPEC, dir_in, dir_out, tauv,mu_d, $
      oplot, lambda, -alog(spec_g_dust[*,0]/spec_g[*,0]),color=cgcolor('purple')
      oplot, lambda, -alog(spec_ns_dust[*,0]/spec_ns[*,0]),color=cgcolor('cyan')
      oplot, lambda, -alog(spec_os_dust[*,0]/spec_os[*,0]),color=cgcolor('red')
+     
 
      ;; shorteer wavelength range
-     plot, lambda,spec_notau[*,0],/xs,xr=[3000,9000],title='Orien 0: Snapshot '+str_snap+' N*='+string(nstars,form='(I0)')
+     plot, lambda,spec_notau[*,0],/xs,xr=[3000,9000],xtitle='Wavelength [A]',ytitle=textoidl('Luminosity [L_\odot/A]'),title='Orien 0: Snapshot '+str_snap+' N*='+string(nstars,form='(I0)')
      oplot, lambda,spec_os[*,0],color=cgcolor('red')
      oplot, lambda,spec_ns[*,0],color=cgcolor('cyan')
      oplot, lambda,spec_g[*,0],color=cgcolor('purple')
+     xyouts, 0.8,0.4,'Total',/normal
+     xyouts, 0.8,0.35,'Old stars',/normal,color=cgcolor('red')
+     xyouts, 0.8,0.25,'New Stars',/normal,color=cgcolor('cyan')
+     xyouts, 0.8,0.2,'Gas',/normal,color=cgcolor('purple')
+
+
+
+
+
+
 
      plot, lambda,spec_tau[*,0],/xs,xr=[3000,9000],title='Orien 0: Snapshot '+str_snap+' with dust'+' N*='+string(nstars,form='(I0)')
      oplot, lambda,spec_os_dust[*,0],color=cgcolor('red')
      oplot, lambda,spec_ns_dust[*,0],color=cgcolor('cyan')
      oplot, lambda,spec_g_dust[*,0],color=cgcolor('purple')
+     xyouts, 0.8,0.9,'Total',/normal
+     xyouts, 0.8,0.85,'Old stars',/normal,color=cgcolor('red')
+     xyouts, 0.8,0.75,'New Stars',/normal,color=cgcolor('cyan')
+     xyouts, 0.8,0.7,'Gas',/normal,color=cgcolor('purple')
 
      plot, lambda, -alog(spec_tau[*,0]/spec_notau[*,0]),/xs,xr=[3000,9000],ytitle=textoidl('\tau_\lambda')
      oplot, [5500,5500],[0,5],linestyle=2
