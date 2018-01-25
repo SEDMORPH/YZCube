@@ -84,10 +84,10 @@ PRO SEDM2_GASSFH, fileseq, indir, outdir=outdir, quiet=quiet,  $
   AttrID= H5A_OPEN_NAME(H5G_OPEN(file_id, '/Header'), 'Time')
   Snap_Time0 = H5A_READ(AttrID)*SimnUnitTime/hubparam
 
-  file_id = H5F_OPEN(filename_long[1])
+  file_id = H5F_OPEN(filename_long[150])
   AttrID= H5A_OPEN_NAME(H5G_OPEN(file_id, '/Header'), 'Time')
-  Snap_Time1 = H5A_READ(AttrID)*SimnUnitTime/hubparam
-  delta_age = (Snap_Time1 - Snap_Time0)*1d9 ;in yr
+  Snap_Time150 = H5A_READ(AttrID)*SimnUnitTime/hubparam
+  delta_age = (Snap_Time150 - Snap_Time0)/150*1d9 ;in yr
 
 
 ;;-- read ssps from SSP files to get time steps
@@ -101,17 +101,17 @@ PRO SEDM2_GASSFH, fileseq, indir, outdir=outdir, quiet=quiet,  $
 ;;===========================yrzheng
   age_ssp = tmp.age & tmp=0     ;in Gyr
   nssps = n_elements(age_ssp)
-  ;delta_age_ssp = age_ssp[findgen(nssps-1)+1]-age_ssp[findgen(nssps-1)] ; in Gyr  
+  ;delta_age_ssp = age_ssp[findgen(nssps-1)+1]-age_ssp[findgen(nssps-1)] ; in Gyr
 ;;===============yrzheng, Jan, 2018
 ;;====Change the division of the delta_age_ssp
-;;====Let it match the "closest bin" algorithm 
+;;====Let it match the "closest bin" algorithm
   delta_age_ssp = fltarr( n_elements(age_ssp) )
   delta_age_ssp[0] = (age_ssp[1] - age_ssp[0])/2.0
   delta_age_ssp[1:-2] = (age_ssp[2:-1] - age_ssp[0:-3])/2.0
   delta_age_ssp[-1] = (age_ssp[-1] - age_ssp[-2])/2.0
   ;print, n_elements(delta_age_ssp)
 
-  
+
   age_snap = dblarr(Nsnap)
 
   time = systime(1)

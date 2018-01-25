@@ -9,7 +9,9 @@
   Massunit=1d10
   UnitTime_in_Gyr=(UnitTime_in_s/GigaYear_in_s)/hubparam ;; VW 25/01/17 why /h here??
   SimnUnitTime = 0.97781307
-  snap_deltatime = 0.02         ;time between snapshots
+
+;;-- let use a more robust method
+  ;;;snap_deltatime = 0.02         ;time between snapshots
 
 ;;-- conversions
   Lsol_in_erg = 3.846d33
