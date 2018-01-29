@@ -201,8 +201,8 @@ PRO SEDM2_GASSFH, fileseq, indir, outdir=outdir, quiet=quiet,  $
         ;; the snapshots have delta_age of 2e7 years, here we spread the SFR out as a top hat into SSP bins with t-delta_t/2<t<t+delta_t/2
         ;; this has to be a cumulative for loop, otherwise non-unique ind_ssp's don't get counted
         for j=0,i do begin
-           ind_all = where(age_ssp*1e9 gt (j-0.5)*delta_age and age_ssp*1e9 lt (j+0.5)*delta_age,count) ;all the SSPs between this+0.5 and this-0.5 snapshot
-
+           ; ind_all = where(age_ssp*1e9 gt (j-0.5)*delta_age and age_ssp*1e9 lt (j+0.5)*delta_age,count)
+           ind_all = where(age_ssp*1e9 gt (i-j-0.5)*delta_age and age_ssp*1e9 lt (i-j+0.5)*delta_age,count) ;all the SSPs between this+0.5 and this-0.5 snapshot
            if count le 1 then $ ; only 1 ssp bin matches the age of the gas. Put all mass from this snapshot into the closest bin
               gassfh[*,ind_ssp[j]] = gassfh[*,ind_ssp[j]]+ sfr[gas.id-1,j]*delta_age $
            else begin           ; many ssp bins lie within the delta_age of the snapshots. Share out mass across SSPs, weighted by SSP age bin size
@@ -251,7 +251,8 @@ PRO SEDM2_GASSFH, fileseq, indir, outdir=outdir, quiet=quiet,  $
 ;;-- Use the SFH of the progenitor gas particles to assign the SFH to the star particles
 ;;-- add the gas SFR during all preceeding snapshots at the correct SSP-index
         for j=0,i do begin
-           ind_all = where(age_ssp*1e9 gt (j-0.5)*delta_age and age_ssp*1e9 lt (j+0.5)*delta_age,count) ;all the SSPs between this+0.5 and this-0.5 snapshot
+           ; ind_all = where(age_ssp*1e9 gt (j-0.5)*delta_age and age_ssp*1e9 lt (j+0.5)*delta_age,count) 
+           ind_all = where(age_ssp*1e9 gt (i-j-0.5)*delta_age and age_ssp*1e9 lt (i-j+0.5)*delta_age,count);all the SSPs between this+0.5 and this-0.5 snapshot
 
            if count le 1 then $ ; only 1 ssp bin matches the age of the gas. Put all mass from this snapshot into the closest bin
               newstarsfh[*,ind_ssp[j]] = newstarsfh[*,ind_ssp[j]]+ sfr[stars[ind_newstars].id-1,j]*delta_age $

@@ -7,3 +7,4 @@ command.sh
 *.out
 another_track.txt
 sfr_track_specific.txt
+._*
