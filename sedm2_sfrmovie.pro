@@ -23,14 +23,14 @@ PRO SEDM2_SFRMOVIE, dir_in, dir_out
 
   ;;-- get time between snapshots. Silly way to do it, but I
   ;;   don't see another safe way.
-    file_id = H5F_OPEN(filename_long[0])
+    file_id = H5F_OPEN(filename[0])
     AttrID= H5A_OPEN_NAME(H5G_OPEN(file_id, '/Header'), 'Time')
     Snap_Time0 = H5A_READ(AttrID)*SimnUnitTime/hubparam
 
-    file_id = H5F_OPEN(filename_long[150])
+    file_id = H5F_OPEN(filename[150])
     AttrID= H5A_OPEN_NAME(H5G_OPEN(file_id, '/Header'), 'Time')
     Snap_Time150 = H5A_READ(AttrID)*SimnUnitTime/hubparam
-    snap_deltatime = (Snap_Time150 - Snap_Time0)/150*1d9 ;in yr
+    snap_deltatime = (Snap_Time150 - Snap_Time0)/150 ;in Gyr
 
   for index=0,nsnap-1 do begin
      time = (index+1)*snap_deltatime+min(sfr_time)
