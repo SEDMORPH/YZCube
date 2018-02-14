@@ -203,11 +203,15 @@ PRO SEDM2_GASSFH, fileseq, indir, outdir=outdir, quiet=quiet,  $
         for j=0,i do begin
            ; ind_all = where(age_ssp*1e9 gt (j-0.5)*delta_age and age_ssp*1e9 lt (j+0.5)*delta_age,count)
            ind_all = where(age_ssp*1e9 gt (i-j-0.5)*delta_age and age_ssp*1e9 lt (i-j+0.5)*delta_age,count) ;all the SSPs between this+0.5 and this-0.5 snapshot
+           ;;SF_length is the time that particles keep forming stars
+           ;;For the current snapshot, SF_length is only half of the delta_age
+           if j lt i then SF_length = delta_age else SF_length = delta_age/2.0
+           if SF_length lt delta_age then print,i,j
            if count le 1 then $ ; only 1 ssp bin matches the age of the gas. Put all mass from this snapshot into the closest bin
-              gassfh[*,ind_ssp[j]] = gassfh[*,ind_ssp[j]]+ sfr[gas.id-1,j]*delta_age $
+              gassfh[*,ind_ssp[j]] = gassfh[*,ind_ssp[j]]+ sfr[gas.id-1,j]*SF_length $
            else begin           ; many ssp bins lie within the delta_age of the snapshots. Share out mass across SSPs, weighted by SSP age bin size
               delta_age_ssp_all = total(delta_age_ssp[ind_all])
-              for k=0,count-1 do gassfh[*,ind_all[k]] = gassfh[*,ind_all[k]]+sfr[gas.id-1,j]*delta_age*delta_age_ssp[ind_all[k]]/delta_age_ssp_all
+              for k=0,count-1 do gassfh[*,ind_all[k]] = gassfh[*,ind_all[k]]+sfr[gas.id-1,j]*SF_length*delta_age_ssp[ind_all[k]]/delta_age_ssp_all
               ;tmp = 0. & for k=0,count-1 do tmp = tmp+total(sfr[gas.id-1,j]*delta_age*delta_age_ssp[ind_all[k]]/delta_age_ssp_all)
               ;print, total(sfr[gas.id-1,j]*delta_age), tmp
            endelse
@@ -247,18 +251,23 @@ PRO SEDM2_GASSFH, fileseq, indir, outdir=outdir, quiet=quiet,  $
 
 ;;-- Snapshot 0: these stars formed in first timestep, so they don't have a gas SFH. Assign SFR(now) = median of other gas particles
         if i eq 0 then sfr[stars[ind_newstars].id-1,i] = median(gas.sfr);stars.mass/delta_age
-
+        if i eq 0 then print, "i=0"
+        if i eq 0 then continue
 ;;-- Use the SFH of the progenitor gas particles to assign the SFH to the star particles
 ;;-- add the gas SFR during all preceeding snapshots at the correct SSP-index
-        for j=0,i do begin
-           ; ind_all = where(age_ssp*1e9 gt (j-0.5)*delta_age and age_ssp*1e9 lt (j+0.5)*delta_age,count) 
+        for j=0,i-1 do begin
+           ; ind_all = where(age_ssp*1e9 gt (j-0.5)*delta_age and age_ssp*1e9 lt (j+0.5)*delta_age,count)
            ind_all = where(age_ssp*1e9 gt (i-j-0.5)*delta_age and age_ssp*1e9 lt (i-j+0.5)*delta_age,count);all the SSPs between this+0.5 and this-0.5 snapshot
+           ;;SF_length is the time that particles keep forming stars
+           ;;For the current snapshot, SF_length is only half of the delta_age
+           if j lt i then SF_length = delta_age else SF_length = delta_age/2.0
+           if SF_length lt delta_age then print,i,j
 
            if count le 1 then $ ; only 1 ssp bin matches the age of the gas. Put all mass from this snapshot into the closest bin
-              newstarsfh[*,ind_ssp[j]] = newstarsfh[*,ind_ssp[j]]+ sfr[stars[ind_newstars].id-1,j]*delta_age $
+              newstarsfh[*,ind_ssp[j]] = newstarsfh[*,ind_ssp[j]]+ sfr[stars[ind_newstars].id-1,j]*SF_length $
            else begin           ; many ssp bins lie within the delta_age of the snapshots. Share out mass across SSPs, weighted by SSP age bin size
               delta_age_ssp_all = total(delta_age_ssp[ind_all])
-              for k=0,count-1 do  newstarsfh[*,ind_all[k]]=newstarsfh[*,ind_all[k]]+sfr[stars[ind_newstars].id-1,j]*delta_age*delta_age_ssp[ind_all[k]]/delta_age_ssp_all
+              for k=0,count-1 do  newstarsfh[*,ind_all[k]]=newstarsfh[*,ind_all[k]]+sfr[stars[ind_newstars].id-1,j]*SF_length*delta_age_ssp[ind_all[k]]/delta_age_ssp_all
            endelse
 
         endfor

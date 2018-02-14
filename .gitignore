@@ -8,3 +8,6 @@ command.sh
 another_track.txt
 sfr_track_specific.txt
 ._*
+*.png
+*sfr*.txt
+*.py
