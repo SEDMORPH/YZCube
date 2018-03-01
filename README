@@ -18,3 +18,7 @@ ALL directories should now be set in the sedm2_directories.inc file. This can th
 
 
 
+About branches:
+> master: Working on metallicity currently.
+> v2.0  : Finish checking SFH.
+> v1.0. : Can find centers of galaxies.
