@@ -137,14 +137,15 @@ PRO SEDM2_GASSFH, fileseq, indir, outdir=outdir, quiet=quiet,  $
 ;;-- initialise output arrays
      if size(gas,/type) eq 8  then begin
         ngas = n_elements(gas)
-        gassfh = fltarr(ngas,nssps)
+        ; gassfh = fltarr(ngas,nssps)
+        gassfh = fltarr(ngas,nssps, n_Z) ;;funny face (n_Z). Okay, n_Z is the how many metallicity models we have now
      endif else ngas=0
 
      if size(stars,/type) eq 8 then begin
         ind_newstars = where(stars.id lt oldstars_minid, nnewstars,compl=ind_oldstars)
         if ind_oldstars[0] ne -1 then noldstars = n_elements(ind_oldstars) else noldstars = 0
 
-        if nnewstars ne 0 then newstarsfh = fltarr(nnewstars,nssps)
+        if nnewstars ne 0 then newstarsfh = fltarr(nnewstars,nssps, n_Z)
 ;        if noldstars ne 0 then oldstarsfh = fltarr(noldstars,nssps)
      endif else begin
         nnewstars=0
@@ -157,8 +158,12 @@ PRO SEDM2_GASSFH, fileseq, indir, outdir=outdir, quiet=quiet,  $
 ;; Joe - possible error in last snapshot file
 ;;     if i gt 0 and abs((age_snap[i]-age_snap[i-1])*1e9 - delta_age) gt delta_age/100. then message, 'Snapshots must be equally spaced in time'
 
-;;-- initialise array to store sfr for all snapshots
-     if i eq 0 then sfr = fltarr(ngas+nnewstars, Nsnap)
+;;-- initialise array to store sfr and metallicity for all snapshots
+     if i eq 0 then begin
+       sfr = fltarr(ngas+nnewstars, Nsnap)
+       ind_metal_history =  uintarr(ngas, Nsnap) ;;record the ind_metal_history
+     endif
+
 
 ;;-- if generations = 2 in Gadget-2 allvars.h then one gas particle
 ;;   makes 2 gas particles. See email from Peter 2/5/2014. VW checked and compared to mass
@@ -193,30 +198,39 @@ PRO SEDM2_GASSFH, fileseq, indir, outdir=outdir, quiet=quiet,  $
 ;        junk = where(gas.id le 0,count) ;check indices are sensible
 ;        if count gt 0 then message, 'Gas indices screwed up'
 
-;;-- Store the instantaneous SFR of each gas particle at this snapshot
+;;-- Store the instantaneous SFR of each gas particle at this snapshot, also metallicity
         ;; this array is then used in subsequent snapshots to build up a SFR(t) over the duration of the simulations
         sfr[gas.id-1,i] = gas.sfr ; particles are in arbitrary places in gas array, here we order from 0 to Ngas+Nstars for easy access
+        sedm2_z_ind, gas.metal, Z_values, Z_ind
+        ind_metal_history[gas.id-1, i] = Z_ind
 
 ;;-- Add the gas SFR during this snapshot + each preceeding snapshot at the correct SSP-index
         ;; the snapshots have delta_age of 2e7 years, here we spread the SFR out as a top hat into SSP bins with t-delta_t/2<t<t+delta_t/2
         ;; this has to be a cumulative for loop, otherwise non-unique ind_ssp's don't get counted
         for j=0,i do begin
-           ; ind_all = where(age_ssp*1e9 gt (j-0.5)*delta_age and age_ssp*1e9 lt (j+0.5)*delta_age,count)
-           ind_all = where(age_ssp*1e9 gt (i-j-0.5)*delta_age and age_ssp*1e9 lt (i-j+0.5)*delta_age,count) ;all the SSPs between this+0.5 and this-0.5 snapshot
-           ;;SF_length is the time that particles keep forming stars
-           ;;For the current snapshot, SF_length is only half of the delta_age
-           if j lt i then SF_length = delta_age else SF_length = delta_age/2.0
-           if SF_length lt delta_age then print,i,j
-           if count le 1 then $ ; only 1 ssp bin matches the age of the gas. Put all mass from this snapshot into the closest bin
-              gassfh[*,ind_ssp[j]] = gassfh[*,ind_ssp[j]]+ sfr[gas.id-1,j]*SF_length $
-           else begin           ; many ssp bins lie within the delta_age of the snapshots. Share out mass across SSPs, weighted by SSP age bin size
-              delta_age_ssp_all = total(delta_age_ssp[ind_all])
-              for k=0,count-1 do gassfh[*,ind_all[k]] = gassfh[*,ind_all[k]]+sfr[gas.id-1,j]*SF_length*delta_age_ssp[ind_all[k]]/delta_age_ssp_all
-              ;tmp = 0. & for k=0,count-1 do tmp = tmp+total(sfr[gas.id-1,j]*delta_age*delta_age_ssp[ind_all[k]]/delta_age_ssp_all)
-              ;print, total(sfr[gas.id-1,j]*delta_age), tmp
-           endelse
+          ;;SF_length is the time that particles keep forming stars
+          ;;For the current snapshot, SF_length is only half of the delta_age
+          if j lt i then SF_length = delta_age else SF_length = delta_age/2.0
+          ; if SF_length lt delta_age then print,i,j
 
-        endfor
+          for mm=0, N_z-1 do begin
+
+             ind_metal = where(ind_metal_history[*,j] eq mm, mcount)
+             if mcount gt 0 then begin ;;do have gas particles with this metallicity
+               ;all the SSPs between this+0.5 and this-0.5 snapshot and all particles attached this metal value
+               ind_all = where(age_ssp*1e9 gt (i-j-0.5)*delta_age and age_ssp*1e9 lt (i-j+0.5)*delta_age, count)
+
+               if count le 1 then $ ; only 1 ssp bin matches the age of the gas. Put all mass from this snapshot into the closest bin
+                  gassfh[ind_metal,ind_ssp[j],mm] = gassfh[ind_metal,ind_ssp[j], mm]+ sfr[gas[ind_metal].id-1,j]*SF_length $
+               else begin           ; many ssp bins lie within the delta_age of the snapshots. Share out mass across SSPs, weighted by SSP age bin size
+                  delta_age_ssp_all = total(delta_age_ssp[ind_all])
+                  for k=0,count-1 do gassfh[ind_metal,ind_all[k], mm] = gassfh[ind_metal,ind_all[k], mm]+sfr[gas[ind_metal].id-1,j]*SF_length*delta_age_ssp[ind_all[k]]/delta_age_ssp_all
+                  ;tmp = 0. & for k=0,count-1 do tmp = tmp+total(sfr[gas.id-1,j]*delta_age*delta_age_ssp[ind_all[k]]/delta_age_ssp_all)
+                  ;print, total(sfr[gas.id-1,j]*delta_age), tmp
+               endelse
+            endif ; if mcount gt 0
+          endfor ; for mm
+        endfor ; for j
 
 ;;--  check for mass conservation
         masscum1 = masscum1+total(gas.sfr)*delta_age
@@ -249,6 +263,8 @@ PRO SEDM2_GASSFH, fileseq, indir, outdir=outdir, quiet=quiet,  $
 
      if nnewstars gt 0 then begin ; some star particles
 
+        newstars=stars[ind_newstars]
+        stars_IMH = ind_metal_history[newstars.id -1,*]
 ;;-- Snapshot 0: these stars formed in first timestep, so they don't have a gas SFH. Assign SFR(now) = median of other gas particles
         if i eq 0 then sfr[stars[ind_newstars].id-1,i] = median(gas.sfr);stars.mass/delta_age
         if i eq 0 then print, "i=0"
@@ -256,21 +272,28 @@ PRO SEDM2_GASSFH, fileseq, indir, outdir=outdir, quiet=quiet,  $
 ;;-- Use the SFH of the progenitor gas particles to assign the SFH to the star particles
 ;;-- add the gas SFR during all preceeding snapshots at the correct SSP-index
         for j=0,i-1 do begin
-           ; ind_all = where(age_ssp*1e9 gt (j-0.5)*delta_age and age_ssp*1e9 lt (j+0.5)*delta_age,count)
-           ind_all = where(age_ssp*1e9 gt (i-j-0.5)*delta_age and age_ssp*1e9 lt (i-j+0.5)*delta_age,count);all the SSPs between this+0.5 and this-0.5 snapshot
-           ;;SF_length is the time that particles keep forming stars
-           ;;For the current snapshot, SF_length is only half of the delta_age
-           if j lt i then SF_length = delta_age else SF_length = delta_age/2.0
-           if SF_length lt delta_age then print,i,j
+          ;;SF_length is the time that particles keep forming stars
+          ;;For the current snapshot, SF_length is only half of the delta_age
 
-           if count le 1 then $ ; only 1 ssp bin matches the age of the gas. Put all mass from this snapshot into the closest bin
-              newstarsfh[*,ind_ssp[j]] = newstarsfh[*,ind_ssp[j]]+ sfr[stars[ind_newstars].id-1,j]*SF_length $
-           else begin           ; many ssp bins lie within the delta_age of the snapshots. Share out mass across SSPs, weighted by SSP age bin size
-              delta_age_ssp_all = total(delta_age_ssp[ind_all])
-              for k=0,count-1 do  newstarsfh[*,ind_all[k]]=newstarsfh[*,ind_all[k]]+sfr[stars[ind_newstars].id-1,j]*SF_length*delta_age_ssp[ind_all[k]]/delta_age_ssp_all
-           endelse
+          if j lt i then SF_length = delta_age else SF_length = delta_age/2.0
+          ; if SF_length lt delta_age then print,i,j
 
-        endfor
+          for mm=0, N_z-1 do begin
+            ind_metal = where(stars_IMH[*,j] eq mm, mcount)
+            if mcount gt 0 then begin ;;do have gas particles with this metallicity
+               ; ind_all = where(age_ssp*1e9 gt (j-0.5)*delta_age and age_ssp*1e9 lt (j+0.5)*delta_age,count)
+               ind_all = where(age_ssp*1e9 gt (i-j-0.5)*delta_age and age_ssp*1e9 lt (i-j+0.5)*delta_age,count);all the SSPs between this+0.5 and this-0.5 snapshot
+
+               if count le 1 then $ ; only 1 ssp bin matches the age of the gas. Put all mass from this snapshot into the closest bin
+                  newstarsfh[ind_metal,ind_ssp[j],mm] = newstarsfh[ind_metal,ind_ssp[j],mm]+ sfr[newstars.id-1,j]*SF_length $
+               else begin           ; many ssp bins lie within the delta_age of the snapshots. Share out mass across SSPs, weighted by SSP age bin size
+                  delta_age_ssp_all = total(delta_age_ssp[ind_all])
+                  for k=0,count-1 do  newstarsfh[ind_metal,ind_all[k],mm]=newstarsfh[ind_metal,ind_all[k],mm]+sfr[newstars[ind_metal].id-1,j]*SF_length*delta_age_ssp[ind_all[k]]/delta_age_ssp_all
+               endelse
+
+            endif ;if mcount gt 0
+          endfor ; for mm
+        endfor  ; for j
 
 ;;-- check for mass conservation
         masscum2 = masscum2+total(newstarsfh)
