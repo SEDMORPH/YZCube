@@ -201,7 +201,7 @@ PRO SEDM2_GASSFH, fileseq, indir, outdir=outdir, quiet=quiet,  $
 ;;-- Store the instantaneous SFR of each gas particle at this snapshot, also metallicity
         ;; this array is then used in subsequent snapshots to build up a SFR(t) over the duration of the simulations
         sfr[gas.id-1,i] = gas.sfr ; particles are in arbitrary places in gas array, here we order from 0 to Ngas+Nstars for easy access
-        sedm2_z_ind, gas.metal, Z_values, Z_ind
+        sedm2_z_ind, gas.metal, Z_models.values, Z_ind
         ind_metal_history[gas.id-1, i] = Z_ind
 
 ;;-- Add the gas SFR during this snapshot + each preceeding snapshot at the correct SSP-index
