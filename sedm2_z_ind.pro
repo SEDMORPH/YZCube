@@ -18,7 +18,7 @@ PRO sedm2_z_ind, Metallicity, Z_values, Z_ind
   n_Z = n_elements(Z_values)
   Npart = n_elements(Z)
   ;;-- find closest Z values to particles
-  diff = abs( rebin(alog10(Z), Npart, n_Z) - rebin(transpose(alog10(Z_values)), Npart, n_Z) )
+  diff = abs( rebin(alog10(Z), Npart, n_Z, /sample) - rebin(transpose(alog10(Z_values)), Npart, n_Z, /sample) )
   minarr = min(diff,dimension=2,ind_ssp_1d)
   ind_ssp_2d = array_indices(size(diff,/dim),ind_ssp_1d,/dimensions) ;convert back to 2D indices
   Z_ind = reform(ind_ssp_2d[1,*])

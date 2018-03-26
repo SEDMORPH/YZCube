@@ -161,7 +161,8 @@ PRO SEDM2_GASSFH, fileseq, indir, outdir=outdir, quiet=quiet,  $
 ;;-- initialise array to store sfr and metallicity for all snapshots
      if i eq 0 then begin
        sfr = fltarr(ngas+nnewstars, Nsnap)
-       ind_metal_history =  uintarr(ngas, Nsnap) ;;record the ind_metal_history
+       ind_metal_history = uintarr(ngas, Nsnap) ;;record the ind_metal_history
+       ind_metal_history = ind_metal_history + 999 ;;use 999 as symbol for unassigned data
      endif
 
 
@@ -203,6 +204,11 @@ PRO SEDM2_GASSFH, fileseq, indir, outdir=outdir, quiet=quiet,  $
         sfr[gas.id-1,i] = gas.sfr ; particles are in arbitrary places in gas array, here we order from 0 to Ngas+Nstars for easy access
         sedm2_z_ind, gas.metal, Z_models.values, Z_ind
         ind_metal_history[gas.id-1, i] = Z_ind
+        if nnewstars gt 0 then begin
+          newstars=stars[ind_newstars]
+          sedm2_z_ind, newstars.metal, Z_models.values, Z_ind
+          ind_metal_history[newstars.id-1, i] = Z_ind
+        endif
 
 ;;-- Add the gas SFR during this snapshot + each preceeding snapshot at the correct SSP-index
         ;; the snapshots have delta_age of 2e7 years, here we spread the SFR out as a top hat into SSP bins with t-delta_t/2<t<t+delta_t/2
@@ -263,7 +269,7 @@ PRO SEDM2_GASSFH, fileseq, indir, outdir=outdir, quiet=quiet,  $
 
      if nnewstars gt 0 then begin ; some star particles
 
-        newstars=stars[ind_newstars]
+        ; newstars=stars[ind_newstars]
         stars_IMH = ind_metal_history[newstars.id -1,*]
 ;;-- Snapshot 0: these stars formed in first timestep, so they don't have a gas SFH. Assign SFR(now) = median of other gas particles
         if i eq 0 then sfr[stars[ind_newstars].id-1,i] = median(gas.sfr);stars.mass/delta_age
@@ -321,7 +327,7 @@ PRO SEDM2_GASSFH, fileseq, indir, outdir=outdir, quiet=quiet,  $
 ;;------------------------------------------------------------------
 ;;-- output file
 
-     save, gassfh, newstarsfh, file=outfile, /compress
+     save, gassfh, newstarsfh, ind_metal_history, file=outfile, /compress
 
      if not(keyword_set(quiet)) then splog, 'Saved file: ' + outfile
 
