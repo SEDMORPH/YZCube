@@ -33,14 +33,14 @@
 ;
 ;*****************************************************************
 
-FUNCTION bc03_projectbc03, specstr, nrecon, runno,$ ;inputs
+FUNCTION bc03_projectbc03, specstr, nrecon, runno, dir_pca_data,$ ;inputs
                            plotspec=plotspec,silent=silent,maskem=maskem,$ ;keyword switches
                            usegappy=usegappy,usenormgappy=usenormgappy, $ ;keyword switches
                            norm=norm,vdisp=vdisp,flxarr=flxarr,$ ; optional outputs
                            chi2=chi2,wave_espec=wave_espec, wave_extend = wave_extend ;optional outputs
 
-; @bc03dir.inc
-; @voinfo.inc
+@bc03dir.inc
+@voinfo.inc
 
 if NOT(TAG_EXIST(specstr,'data_disp')) then begin
     print, 'Need to know data dispersion if input own array'
@@ -74,9 +74,7 @@ endif
 strrunno = string(runno,form='(I0)')
 
 if not(keyword_set(silent)) then splog,'Projecting runno',runno
-print,"dir_vopca: ",dir_vopca
-print, "strrunno: ", strrunno
-print, "csv: ", dir_vopca+'pcavo_info.csv'
+
 ;; get eigenspectra
 infile = DIR_VOpca+'ESPEC/pcavo_espec_'+strrunno+'.sav'
 restore, infile
@@ -184,7 +182,8 @@ for i=0L,ngal-1 do begin
     linterp, wave,specarr[*,i],wave_extend,flux
 
     ;; convolve with Gaussian
-    if not(NOCONV) then flux = gconv(flux, sigma_pix)
+    ;;comment out for test, remember to add this line back afte getting gconv
+    if not(NOCONV) then flux = gconv(flux, sigma_pix);;;
 
 
     ;; mask "emission" lines - not sure where this should go

@@ -150,10 +150,10 @@ END
 ;; MAIN PROGRAM
 ;;******************************************************************
 
-FUNCTION SPEC_INDS, J, X, F, SED=SED, LICK=LICK, FFN=FFN
+FUNCTION SEDM2_SPEC_INDS, J, X, F, SED=SED, LICK=LICK, FFN=FFN
 
 ;;contains structure "index"
-@spec_inds.inc
+@sedm2_spec_inds.inc
 
 ;; Number of spectra/galaxies
 ;;F[*,i] is the sed of i th galaxy

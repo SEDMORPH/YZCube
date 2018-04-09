@@ -146,7 +146,7 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
 ;; Create spectral indices
 ;;------------------------------------------------------------------
 
-  if keyword_Set(pca) then SEDM2_pca, dir_in, dir_out, tauv, mu_d;, snap = snapID
+  if keyword_Set(pca) then SEDM2_pca, dir_in, dir_out, tauv, mu_d, dir_pca_data;, snap = snapID
 
 
 

@@ -7,16 +7,20 @@
 ;;*
 ;;******************************************************************
 
-PRO SEDM2_PCA, dir_in, dir_out, tauv, mu_d
+PRO SEDM2_PCA, dir_in, dir_out, tauv, mu_d, dir_pca_data
 
   @sedm2_codeunits.inc
+  ; @sedm2_directories.inc
 
 
 ;;-- set up plotting file
   outstr = '_tauv'+string(tauv,form='(F0.1)')
   outstr = outstr+'_mu'+string(mu_d,form='(F0.1)')
 
-  filename = file_search(dir_out+'spec'+outstr+'_*'+'.fits',count=nsnap)
+  filename = file_search(dir_out+'spec'+outstr+'_???'+'.fits',count=nsnap)
+
+  ;;for code test
+  ; nsnap=5
 
   outfile = dir_out+'pcs'+outstr+'.fits'
   psfile = dir_out+'pcs'+outstr+'.ps'
@@ -55,6 +59,8 @@ PRO SEDM2_PCA, dir_in, dir_out, tauv, mu_d
 
   hd_tau = (hd_notau =  (d4n_tau = (d4n_notau = (eqw_ha = (sfr = fltarr(nsnap))))))
 
+  print, "SEDM2_PCA: Number of snapshots to be processed: ", nsnap
+
   for i=0,nsnap-1 do begin
 
      data = mrdfits(filename[i],1,hdr,/silent)
@@ -65,14 +71,14 @@ PRO SEDM2_PCA, dir_in, dir_out, tauv, mu_d
      specstr_tau = {specarr:data.spec_tau,wave:wave,data_disp:58.}
      specstr_notau = {specarr:data.spec_notau,wave:wave,data_disp:58.}
 
-     pcs_notau[*,i] = bc03_projectbc03(specstr_notau,3,25,plotspec=1,norm=nn,/usenormgappy,/silent)
-     pcs_tau[*,i] = bc03_projectbc03(specstr_tau,3,25,plotspec=1,norm=nn,/usenormgappy,/silent)
+     pcs_notau[*,i] = bc03_projectbc03(specstr_notau,3,25,dir_pca_data, plotspec=0,norm=nn,/usenormgappy,/silent)
+     pcs_tau[*,i] = bc03_projectbc03(specstr_tau,3,25,dir_pca_data, plotspec=0,norm=nn,/usenormgappy,/silent)
      norm[i] = nn               ;needs different normalisations!!!
 
-     hd_tau[i] = spec_inds(21, wave, data.spec_tau)
-     hd_notau[i] = spec_inds(21, wave, data.spec_notau)
-     d4n_tau[i] = spec_inds(101, wave, data.spec_tau)
-     d4n_notau[i] = spec_inds(101, wave, data.spec_notau)
+     hd_tau[i] = sedm2_spec_inds(21, wave, data.spec_tau)
+     hd_notau[i] = sedm2_spec_inds(21, wave, data.spec_notau)
+     d4n_tau[i] = sedm2_spec_inds(101, wave, data.spec_tau)
+     d4n_notau[i] = sedm2_spec_inds(101, wave, data.spec_notau)
 
      cont = data.spec_tau[(where(wave ge 6564))[0]]*3.839*10d^33 ;in erg/s/AA
 
@@ -96,7 +102,7 @@ PRO SEDM2_PCA, dir_in, dir_out, tauv, mu_d
 
   ;;-- PC12 with DR7 galaxies
 
-  restore,!dataDIR+'DR7/DR7specobj_gal_pcs_noduplicates.sav'
+  restore,dir_pca_data+'DR7/DR7specobj_gal_pcs_noduplicates.sav'
   ind = where(sdss_uniq.pc1err gt 0 and sdss_uniq.pc1err lt 0.25)
   pcs_data = transpose([[sdss_uniq[ind].pc1], [-sdss_uniq[ind].pc2]])
   minx=-7 & miny=-3 & dbinx=0.2 & dbiny=0.1
@@ -116,12 +122,12 @@ PRO SEDM2_PCA, dir_in, dir_out, tauv, mu_d
 
   ;;-- Hdelta-D4000 with DR7 galaxies
 
-  ;data = mrdfits(!dataDIR+'SDSS_MPA/gal_idxfix_dr7_v5_2.fit',1) ;very slow, need to par down
+  ;data = mrdfits(dir_pca_data+'SDSS_MPA/gal_idxfix_dr7_v5_2.fit',1) ;very slow, need to par down
   ;data2 = replicate({lick_hd_a_sub:0.0,lick_hd_a_sub_err:0.0,D4000_N_SUB:0.0,D4000_N_SUB_ERR:0.0},n_elements(data))
   ;copy_struct, data,data2
   ;data = data2
-  ;save, data,file=!dataDIR+'SDSS_MPA/HdA_D4n_dr7_v5_2.sav'
-  restore, !dataDIR+'SDSS_MPA/HdA_D4n_dr7_v5_2.sav'
+  ;save, data,file=dir_pca_data+'SDSS_MPA/HdA_D4n_dr7_v5_2.sav'
+  restore, dir_pca_data+'SDSS_MPA/HdA_D4n_dr7_v5_2.sav'
 
   ind = where(data.lick_hd_a_sub_err gt 0 and data.lick_hd_a_sub_err lt 2)
   indices = transpose([[data[ind].D4000_N_SUB],[data[ind].LICK_HD_A_SUB]])
