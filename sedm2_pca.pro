@@ -33,14 +33,16 @@ PRO SEDM2_PCA, dir_in, dir_out, tauv, mu_d
 
   ;;-- get time between snapshots. Silly way to do it, but I
   ;;   don't see another safe way.
-    file_id = H5F_OPEN(filename[0])
+    SimnSnaps = file_search(dir_in+'/*.hdf5')
+    file_id = H5F_OPEN(SimnSnaps[0])
     AttrID= H5A_OPEN_NAME(H5G_OPEN(file_id, '/Header'), 'Time')
     Snap_Time0 = H5A_READ(AttrID)*SimnUnitTime/hubparam
 
-    file_id = H5F_OPEN(filename[150])
+    file_id = H5F_OPEN(SimnSnaps[150])
     AttrID= H5A_OPEN_NAME(H5G_OPEN(file_id, '/Header'), 'Time')
     Snap_Time150 = H5A_READ(AttrID)*SimnUnitTime/hubparam
     snap_deltatime = (Snap_Time150 - Snap_Time0)/150 ;in Gyr
+    ; print, snap_deltatime
 
 ;;------------------------------------------------------------------
 ;;-- calculate SDSS PCs
