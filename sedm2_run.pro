@@ -53,7 +53,7 @@
 PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu_d, $
     sdssimage=sdssimage,imagesize=imagesize, faceon=faceon, sfrmovie=sfrmovie, sdssmovie=sdssmovie, $
     hyperion=hyperion, gassfh = gassfh,  movieorientation=movieorientation,spectra=spectra,pca=pca, $
-    centerslist=centerslist, cen_spectra=cen_spectra
+    centerslist=centerslist, cen_spectra=cen_spectra, spec_inds
 
   if n_elements(fileseq) eq 0 then begin
      print, 'please provide input file sequence'
@@ -137,12 +137,16 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
  if keyword_Set(cen_spectra) then SEDM2_cen_spec, dir_in, dir_out,tauv,mu_d, $
                                           snap = snapID, model_str=model_str, models_dir=dir_models
 
+;;------------------------------------------------------------------
+;; Create spectral indices
+;;------------------------------------------------------------------
+  if keyword_Set(spec_inds) then sedm2_measure_spec_inds, fileseq, dir_in, dir_out, snap=snapID
 
 ;;------------------------------------------------------------------
 ;; Create spectral indices
 ;;------------------------------------------------------------------
 
-  if keyword_Set(pca) then SEDM2_pca, dir_in, dir_out, tauv, mu_d;, snap = snapID
+  if keyword_Set(pca) then SEDM2_pca, dir_in, dir_out, tauv, mu_d, dir_pca_data;, snap = snapID
 
 
 

@@ -11,3 +11,5 @@ sfr_track_specific.txt
 *.png
 *sfr*.txt
 *.py
+.DS_Store
+.DS_*

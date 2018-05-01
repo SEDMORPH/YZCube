@@ -24,7 +24,7 @@ FUNCTION SEDM2_GETSSPS, models_dir, model, Z, nlambda, nssps, age_ssp,  vel=vel
 
 
 ; if ((model eq 'CB08') or (model eq 'cb08')) then $
-;       stem = !dataDIR+'bc03/models/CB08/cb2008_hr_miless_n' $
+;       stem = dir_pca_data+'bc03/models/CB08/cb2008_hr_miless_n' $
 ; else if ((model eq 'BC03') or (model eq 'bc03')) then $
         ;stem = models_dir+'bc2003_hr_m' ;$
         stem = models_dir+'bc2003_hr_xmiless_m' ;$
