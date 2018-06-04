@@ -16,14 +16,17 @@ PRO SEDM2_PCA, dir_in, dir_out, tauv, mu_d, dir_pca_data
 ;;-- set up plotting file
   outstr = '_tauv'+string(tauv,form='(F0.1)')
   outstr = outstr+'_mu'+string(mu_d,form='(F0.1)')
-
-  filename = file_search(dir_out+'spec'+outstr+'_???'+'.fits',count=nsnap)
+  style = ''
+  ; style = '_eagle'
+  ; style = '_eagle_minus'
+  ; style='_star_age'
+  filename = file_search(dir_out+'spec'+outstr+'_???'+style+'.fits',count=nsnap)
 
   ;;for code test
   ; nsnap=5
 
-  outfile = dir_out+'pcs'+outstr+'.fits'
-  psfile = dir_out+'pcs'+outstr+'.ps'
+  outfile = dir_out+'pcs'+outstr+style+'.fits'
+  psfile = dir_out+'pcs'+outstr+style+'.ps'
 
 ;;-- SFR for EQW Halpha
   SFR_logfile  = dir_in+'sfr.txt'
@@ -46,7 +49,7 @@ PRO SEDM2_PCA, dir_in, dir_out, tauv, mu_d, dir_pca_data
     AttrID= H5A_OPEN_NAME(H5G_OPEN(file_id, '/Header'), 'Time')
     Snap_Time150 = H5A_READ(AttrID)*SimnUnitTime/hubparam
     snap_deltatime = (Snap_Time150 - Snap_Time0)/150 ;in Gyr
-    ; print, snap_deltatime
+    print, snap_deltatime
 
 ;;------------------------------------------------------------------
 ;;-- calculate SDSS PCs
@@ -115,6 +118,7 @@ PRO SEDM2_PCA, dir_in, dir_out, tauv, mu_d, dir_pca_data
   yy = findgen((size(hist,/dim))[1])*dbiny+miny + dbiny/2.
   cgloadct,0,/reverse
   cgcontour, loghist,xx,yy,nlevels=20,/fill,missingvalue=-999.,xtitle='PC1',ytitle='PC2',xr=[-7,2],/xs,yr=[-3,2],/ys
+  save, xx, yy, loghist, file='DR7_loghist.sav'
 
   oplot, pcs_notau[0,*],-pcs_notau[1,*],psym=-1
   loadct, 13,ncolors=nsnap
@@ -141,7 +145,6 @@ PRO SEDM2_PCA, dir_in, dir_out, tauv, mu_d, dir_pca_data
   yy = findgen((size(hist,/dim))[1])*dbiny+miny + dbiny/2.
   cgloadct, 0,/reverse
   cgcontour, loghist,xx,yy,nlevels=20,/fill,missingvalue=-999.,xtitle='Dn4000',ytitle=textoidl('H\delta_A'),yr=[-8,12],/xs,xr=[0.7,2.5],/ys
-
   oplot, d4n_notau,hd_notau,psym=-1
   loadct, 13,ncolors=nsnap
   for i=0,nsnap-1 do plots, d4n_tau[i],hd_tau[i],color=color[i],psym=1
