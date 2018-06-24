@@ -16,17 +16,22 @@ PRO SEDM2_PCA, dir_in, dir_out, tauv, mu_d, dir_pca_data
 ;;-- set up plotting file
   outstr = '_tauv'+string(tauv,form='(F0.1)')
   outstr = outstr+'_mu'+string(mu_d,form='(F0.1)')
+
+  cell = ''
+  cell = 'cen_'
+  ; cell = 'tracked_cell_'
+
   style = ''
   ; style = '_eagle'
   ; style = '_eagle_minus'
   ; style='_star_age'
-  filename = file_search(dir_out+'spec'+outstr+'_???'+style+'.fits',count=nsnap)
+  filename = file_search(dir_out+cell+'spec'+outstr+'_???'+style+'.fits',count=nsnap)
 
   ;;for code test
   ; nsnap=5
 
-  outfile = dir_out+'pcs'+outstr+style+'.fits'
-  psfile = dir_out+'pcs'+outstr+style+'.ps'
+  outfile = dir_out+cell+'pcs'+outstr+style+'.fits'
+  psfile = dir_out+cell+'pcs'+outstr+style+'.ps'
 
 ;;-- SFR for EQW Halpha
   SFR_logfile  = dir_in+'sfr.txt'

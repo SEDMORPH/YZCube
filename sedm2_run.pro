@@ -53,7 +53,8 @@
 PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu_d, $
     sdssimage=sdssimage,imagesize=imagesize, faceon=faceon, sfrmovie=sfrmovie, sdssmovie=sdssmovie, $
     hyperion=hyperion, gassfh = gassfh,  movieorientation=movieorientation,spectra=spectra,pca=pca, $
-    centerslist=centerslist, cen_spectra=cen_spectra, spec_inds
+    centerslist=centerslist, cen_spectra=cen_spectra, $
+    cell_spectra=cell_spectra, cell_x_offset=cell_x_offset, cell_y_offset=cell_y_offset, cell_size=cell_size
 
   if n_elements(fileseq) eq 0 then begin
      print, 'please provide input file sequence'
@@ -74,6 +75,11 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
   if n_elements(redshift) eq 0 then redshift = 0.04               ;redshift to put galaxies at
   if n_elements(tauv) eq 0 then tauv = 1.0                    ;effective optical depth in the V band
   if n_elements(mu_d) eq 0 then mu_d = 0.3                    ;fraction of optical depth in the ISM
+
+  if n_elements(cell_x_offset) eq 0 then cell_x_offset = 0.0  ; if not specified, use the center of the first galaxy
+  if n_elements(cell_y_offset) eq 0 then cell_y_offset = 0.0  ; if not specified, use the center of the first galaxy
+  if n_elements(cell_size) eq 0 then cell_size = 1.0          ; default cell size, 1 kpc * 1kpc
+
 
 ;;------------------------------------------------------------------
 ;; Directories and basic numbers
@@ -134,7 +140,14 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
 ;; Create  optical spectra for the center 1kpc part
 ;;------------------------------------------------------------------
 
- if keyword_Set(cen_spectra) then SEDM2_cen_spec, dir_in, dir_out,tauv,mu_d, $
+ if keyword_Set(cen_spectra) then SEDM2_cen_spec, dir_in, dir_out,tauv,mu_d,$
+                                          snap = snapID, model_str=model_str, models_dir=dir_models
+
+;;------------------------------------------------------------------
+;; Create  optical spectra for a cell
+;;------------------------------------------------------------------
+
+ if keyword_Set(cell_spectra) then SEDM2_cell_spec, dir_in, dir_out,tauv,mu_d,  cell_x_offset, cell_y_offset,cell_size, $
                                           snap = snapID, model_str=model_str, models_dir=dir_models
 
 ;;------------------------------------------------------------------
