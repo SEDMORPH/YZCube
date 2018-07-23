@@ -1,6 +1,6 @@
 
 PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d, cell_x_offset, cell_y_offset,cell_size,$
-                snap = snap_in, model_str=model_str, $
+                snap = snap_in, style=style, model_str=model_str,$
                 models_dir=dir_models
 
 ;;------------------------------------------------------------------
@@ -16,8 +16,9 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d, cell_x_offset, cell_y_offset,ce
 
   cell = 'cell'
   ; cell = 'tracked_cell'
-  ;; style = ''
-  style = '_star_age'
+  if NOT KEYWORD_SET(style) then style='' else style='_'+style;;SEDMoprh style by default
+  ; style = ''
+  ;; style = '_star_age'
   ; for i=0, 4 do print, cell, style
   print, "x_offset | y_offset | cell_size"
   print, cell_x_offset, cell_y_offset,cell_size

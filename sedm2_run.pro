@@ -54,7 +54,8 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
     sdssimage=sdssimage,imagesize=imagesize, faceon=faceon, sfrmovie=sfrmovie, sdssmovie=sdssmovie, $
     hyperion=hyperion, gassfh = gassfh,  movieorientation=movieorientation,spectra=spectra,pca=pca, $
     centerslist=centerslist, cen_spectra=cen_spectra, $
-    cell_spectra=cell_spectra, cell_x_offset=cell_x_offset, cell_y_offset=cell_y_offset, cell_size=cell_size
+    cell_spectra=cell_spectra, cell_x_offset=cell_x_offset, cell_y_offset=cell_y_offset, cell_size=cell_size,$
+    spec_style=spec_style
 
   if n_elements(fileseq) eq 0 then begin
      print, 'please provide input file sequence'
@@ -79,6 +80,7 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
   if n_elements(cell_x_offset) eq 0 then cell_x_offset = 0.0  ; if not specified, use the center of the first galaxy
   if n_elements(cell_y_offset) eq 0 then cell_y_offset = 0.0  ; if not specified, use the center of the first galaxy
   if n_elements(cell_size) eq 0 then cell_size = 1.0          ; default cell size, 1 kpc * 1kpc
+  if n_elements(spec_style) eq 0 then spec_style = ''         ; SEDMoprh style by default
 
 
 ;;------------------------------------------------------------------
@@ -148,7 +150,7 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
 ;;------------------------------------------------------------------
 
  if keyword_Set(cell_spectra) then SEDM2_cell_spec, dir_in, dir_out,tauv,mu_d,  cell_x_offset, cell_y_offset,cell_size, $
-                                          snap = snapID, model_str=model_str, models_dir=dir_models
+                                          snap = snapID, style = spec_style, model_str=model_str, models_dir=dir_models
 
 ;;------------------------------------------------------------------
 ;; Create spectral indices
