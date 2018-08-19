@@ -1,7 +1,11 @@
 
 PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d, cell_x_offset, cell_y_offset,cell_size,$
                 snap = snap_in, style=style, model_str=model_str,$
-                models_dir=dir_models
+                models_dir=dir_models, rtfaceon=rtfaceon
+;+
+; rtfaceon : rotate to faceon, if switched on, rotate the disk to be a face on one.
+;_
+
 
 ;;------------------------------------------------------------------
 ;; Parameters
@@ -28,6 +32,9 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d, cell_x_offset, cell_y_offset,ce
   cell_str = cell_str+'_size_'+string(cell_size, form='(F0.1)' )
   outstr = '_tauv'+string(tauv,form='(F0.1)')
   outstr = outstr+'_mu'+string(mu_d,form='(F0.1)')
+
+  ; outstr=outstr+'_fo' ;;fo for Face on
+  if KEYWORD_SET(rtfaceon) then outstr=outstr+'_fo'
 
   if n_elements(snap_in) gt 0 then psfile = dir_out+cell_str+'_spectra'+outstr+'_'+string(snap_in,form='(I3.3)')+string(style)+'.ps' $
   else psfile = dir_out+string(cell)+'_spectra'+outstr+string(style)+'.ps'
@@ -99,8 +106,6 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d, cell_x_offset, cell_y_offset,ce
      SEDM2_READSNAP, filename[i], stars=stars, gas=gas, sfr=sfr, snap_time=snap_time,/getstars,/getgas
 
 
-
-
      if n_elements(oldstars_minid) eq 0 and i eq 0 then oldstars_minid = min(stars.id) ;minimum ID number of old stars. New stars will have ID < this value.
      if style eq '_star_age' then oldstars_minid=-1
  ;;-- select particles in the center part
@@ -112,6 +117,48 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d, cell_x_offset, cell_y_offset,ce
       free_lun, centertxt
       two_center = centerlist[*,uint(str_snap)]
       center = two_center[0:2]
+
+      ;;rotate to faceon
+      if KEYWORD_SET(rtfaceon) then begin
+        ; outstr=outstr+'_fo' ;;fo for Face on
+        print, psfile
+        print, outfile_fits
+        ; print, "Rotation"
+        ; print, "check gas.x[0], before rotation", gas.x[0]
+        theta1=0.
+        phi1 = 0.
+        ;; Calculate rotation matrix
+        fileseq_ex = (strsplit(dir_in,'/',/extract))[-1] ;;ex for EXtracted
+        print, fileseq_ex
+        orbit = strmid(fileseq_ex, strlen(fileseq_ex)-2, 2 )
+        if orbit eq '07' then theta1 = -109 & phi1 = -60
+        pi = !CONST.pi
+        theta1 *=pi/180
+        phi1 *= pi/180
+        rotate = vw_func_rotate([theta1,0,0]) ## vw_func_rotate([0,0, phi1])
+
+        ;;do the rotation
+        ; print, n_elements(gas.x)
+        xyz_gas = transpose(rotate ## [[gas.x-center[0]],[gas.y-center[1]],[gas.z-center[2]]])
+        ; help, xyz_gas
+        ; help, reform(xyz_gas[0,*])
+        ; help, gas.x
+
+        gas.x = reform(xyz_gas[0,*]) + center[0]
+        gas.y = reform(xyz_gas[1,*]) + center[1]
+        gas.z = reform(xyz_gas[2,*]) + center[2]
+        ; print, n_elements(gas.x)
+
+        xyz_stars = transpose(rotate ## [[stars.x-center[0]],[stars.y-center[1]],[stars.z-center[2]]])
+        stars.x = reform(xyz_stars[0,*]) + center[0]
+        stars.y = reform(xyz_stars[1,*]) + center[1]
+        stars.z = reform(xyz_stars[0,*]) + center[2]
+        ; print, "check gas.x[0], after rotation", gas.x[0][0]
+
+      endif
+
+
+
       ; print, center
       center[0] += cell_x_offset
       center[1] += cell_y_offset
@@ -160,7 +207,7 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d, cell_x_offset, cell_y_offset,ce
      if noldstars gt 0 then SEDM2_BUILDSED, age_ssp, stars, oldstars_minid, sfr, snap_time,plot=plot
 
 ;;-- read gas particle and new star particle SFHs for this snapshot - 0.5 secs
-     restore,  dir_in+'gassfh_uniform_Z_5_March/'+filename_short+'_gassfh.sav'
+     restore,  dir_in+filename_short+'_gassfh.sav'
 
      gassfh=gassfh[gas_cen_ind,*]
 
