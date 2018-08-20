@@ -211,11 +211,13 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d, cell_x_offset, cell_y_offset,ce
      if i eq 0 then plot=1 else plot=0
      if noldstars gt 0 then SEDM2_BUILDSED, age_ssp, stars, oldstars_minid, sfr, snap_time,plot=plot
 
-;;-- read gas particle and new star particle SFHs for this snapshot - 0.5 secs
+ ;;-- read gas particle and new star particle SFHs for this snapshot - 0.5 secs
      if style ne "_star_age" then begin
-	 savefile = dir_in+filename_short+'_gassfh'+style+'.sav'
-	 gassfh=gassfh[gas_cen_ind,*]
-	 newstarsfh=newstarsfh[newstar_cen_ind, *]
+    	 savefile = dir_in+filename_short+'_gassfh'+style+'.sav'
+	 restore, savefile
+    	 gassfh=gassfh[gas_cen_ind,*]
+    	 newstarsfh=newstarsfh[newstar_cen_ind, *]
+     endif
 
 
 ;;-- loop over SSPs to build integrated spectra
