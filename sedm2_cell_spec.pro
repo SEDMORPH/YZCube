@@ -4,6 +4,10 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d, cell_x_offset, cell_y_offset,ce
                 models_dir=dir_models, rtfaceon=rtfaceon
 ;+
 ; rtfaceon : rotate to faceon, if switched on, rotate the disk to be a face on one.
+; 
+; style = '' --> SEDmorph method
+;         '_star_age' --> star_age method
+; also support _eagle and _eagle_minus, but these are not well tested yet.(20-Aug-2018)
 ;_
 
 
@@ -47,6 +51,7 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d, cell_x_offset, cell_y_offset,ce
 
      SEDM2_READSNAP, filename[0], stars=stars, /getstars ;need to get minID of old stars from first file
      oldstars_minid = min(stars.id) ;minimum ID number of old stars. New stars will have ID < this value.
+     ; for _star_age method, treat all stars as old stars, so oldstars_minid should be set to -1
      if style eq '_star_age' then oldstars_minid=-1
 
      tmp = where(strmatch(filename, '*'+string(snap_in,form='(I3.3)')+'.hdf5') eq 1)
@@ -207,16 +212,17 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d, cell_x_offset, cell_y_offset,ce
      if noldstars gt 0 then SEDM2_BUILDSED, age_ssp, stars, oldstars_minid, sfr, snap_time,plot=plot
 
 ;;-- read gas particle and new star particle SFHs for this snapshot - 0.5 secs
-     restore,  dir_in+filename_short+'_gassfh.sav'
-
-     gassfh=gassfh[gas_cen_ind,*]
-
-     newstarsfh=newstarsfh[newstar_cen_ind, *]
+     if style ne "_star_age" then begin
+	 savefile = dir_in+filename_short+'_gassfh'+style+'.sav'
+	 gassfh=gassfh[gas_cen_ind,*]
+	 newstarsfh=newstarsfh[newstar_cen_ind, *]
 
 
 ;;-- loop over SSPs to build integrated spectra
      for j=0,nssps-1 do begin
 
+       ; for _star_age method, treat all stars as old stars, so oldstars_minid was set to be -1
+       ;therefore, we need only calculate "old stars" for star_age method
        if style ne "_star_age" then begin
           ;;-- gas
           if ngas gt 0 then begin
