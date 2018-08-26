@@ -15,3 +15,4 @@ sfr_track_specific.txt
 .DS_*
 DR7_loghist.sav
 *.txt
+*tag*

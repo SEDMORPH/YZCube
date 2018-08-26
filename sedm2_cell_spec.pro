@@ -228,15 +228,23 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d, cell_x_offset, cell_y_offset,ce
        if style ne "_star_age" then begin
           ;;-- gas
           if ngas gt 0 then begin
+	     ; print, "total(gassfh[*,j]):      "
+	     ; print, total(gassfh[*,j])
              if age_ssp[j] le 0.01 then spec_g_young = spec_g_young+total(gassfh[*,j])*ssps_lum[*,j] $
              else spec_g_old = spec_g_old+total(gassfh[*,j])*ssps_lum[*,j]
           endif
 
+	  ; print, "total(spec_g_old), total(spec_g_young)"
+	  ; print, total(spec_g_old), total(spec_g_young)
           ;;-- new stars
           if nnewstars gt 0 then begin
+	     ; print, "total(newstarsfh[*,j]):      "
+	     ; print, total(newstarsfh[*,j])
              if age_ssp[j] le 0.01 then spec_ns_young = spec_ns_young+total(newstarsfh[*,j])*ssps_lum[*,j] $
              else spec_ns_old = spec_ns_old+total(newstarsfh[*,j])*ssps_lum[*,j]
           endif
+	  ; print, "total(spec_ns_old), total(spec_ns_young)"
+	  ; print, total(spec_ns_old), total(spec_ns_young)
         endif ;;style
 
         ;;-- old stars

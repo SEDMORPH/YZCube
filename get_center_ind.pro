@@ -6,7 +6,7 @@ pro get_center_ind, particle, cen_part_ind, center=center, box_size=box_size
   xlist = particle.x
   ylist = particle.y
 
-  print, box_size
+  print, "box_size:  ", box_size
 
   xl = where(xlist le (xc + box_size/2.0))
   ;;comment out print, xl
