@@ -32,10 +32,16 @@ FUNCTION FIND_PARTNUM_RATIO, fileseq
     fileseqlist =[fileseqlist, strmid(fileseq, i , 1) ]
   ; print, fileseqlist
 
-;;----if the fileseq starts with "2x", then it is the major merger
+;;----if the fileseq starts with "2x", then it is a major merger
 ;;----therefore the ratio = 1
   if ( fileseqlist[0] eq '2') AND (fileseqlist[1] eq 'x') then $
     return, ratio = 1.0
+
+;;----if the fileseq starts with "iso_", then it is a isolated simulation
+;;----set the ratio = 999 as a symbol
+  if ( fileseqlist[0] eq 'i') AND (fileseqlist[1] eq 's') $
+      AND (fileseqlist[2] eq 'o') AND (fileseqlist[3] eq '_') then $
+    return, ratio = 999
 
 ;;Otherwise, this might be a minor merger, the smaller galaxy
 ;;should be indcated with a "p" follow the Hubble type
@@ -266,30 +272,47 @@ sorted_zhalo=zhalo(sort_id_halo)
 
 ratio = FIND_PARTNUM_RATIO(fileseq)
 print, "Particle number ratio of first halo to the second one:", ratio
-;the index of the dividing point
-DP_index = FIND_DIVIDING_POINT(sorted_idhalo, partnum_ratio=ratio)
-idhalo_1=sorted_idhalo(0:DP_index-1L)
-pothalo_1=sorted_pothalo(0:DP_index-1L)
-xhalo_1=sorted_xhalo(0:DP_index-1L)
-yhalo_1=sorted_yhalo(0:DP_index-1L)
-zhalo_1=sorted_zhalo(0:DP_index-1L)
 
-idhalo_2=sorted_idhalo(DP_index:Nhalo-1L)
-pothalo_2=sorted_pothalo(DP_index:Nhalo-1L)
-xhalo_2=sorted_xhalo(DP_index:Nhalo-1L)
-yhalo_2=sorted_yhalo(DP_index:Nhalo-1L)
-zhalo_2=sorted_zhalo(DP_index:Nhalo-1L)
+if ratio eq 999 then begin ;isolated simulation
+  ; print, "isolated"
+  binsize = 1.0
+  xc_1 = histcenter(sorted_xhalo, binsize= binsize)
+  yc_1 = histcenter(sorted_yhalo, binsize= binsize)
+  zc_1 = histcenter(sorted_zhalo, binsize= binsize)
+
+  xc_2 = xc_1
+  yc_2 = yc_1
+  zc_2 = zc_1
+
+endif else begin ;merger simulation
+  ;the index of the dividing point
+  print, "merger"
+  DP_index = FIND_DIVIDING_POINT(sorted_idhalo, partnum_ratio=ratio)
+  idhalo_1=sorted_idhalo(0:DP_index-1L)
+  pothalo_1=sorted_pothalo(0:DP_index-1L)
+  xhalo_1=sorted_xhalo(0:DP_index-1L)
+  yhalo_1=sorted_yhalo(0:DP_index-1L)
+  zhalo_1=sorted_zhalo(0:DP_index-1L)
+
+  idhalo_2=sorted_idhalo(DP_index:Nhalo-1L)
+  pothalo_2=sorted_pothalo(DP_index:Nhalo-1L)
+  xhalo_2=sorted_xhalo(DP_index:Nhalo-1L)
+  yhalo_2=sorted_yhalo(DP_index:Nhalo-1L)
+  zhalo_2=sorted_zhalo(DP_index:Nhalo-1L)
 
 
 
-binsize = 1.0
-xc_1 = histcenter(xhalo_1, binsize= binsize)
-yc_1 = histcenter(yhalo_1, binsize= binsize)
-zc_1 = histcenter(zhalo_1, binsize= binsize)
+  binsize = 1.0
+  xc_1 = histcenter(xhalo_1, binsize= binsize)
+  yc_1 = histcenter(yhalo_1, binsize= binsize)
+  zc_1 = histcenter(zhalo_1, binsize= binsize)
 
-xc_2 = histcenter(xhalo_2, binsize= binsize)
-yc_2 = histcenter(yhalo_2, binsize= binsize)
-zc_2 = histcenter(zhalo_2, binsize= binsize)
+  xc_2 = histcenter(xhalo_2, binsize= binsize)
+  yc_2 = histcenter(yhalo_2, binsize= binsize)
+  zc_2 = histcenter(zhalo_2, binsize= binsize)
+
+endelse
+
 
 cen_1 = [xc_1, yc_1, zc_1]
 cen_2 = [xc_2, yc_2, zc_2]
