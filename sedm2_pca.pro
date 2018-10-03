@@ -18,7 +18,7 @@ PRO SEDM2_PCA, dir_in, dir_out, tauv, mu_d, dir_pca_data
   outstr = outstr+'_mu'+string(mu_d,form='(F0.1)')
 
   cell = ''
-  cell = 'cen_'
+  ; cell = 'cen_'
   ; cell = 'tracked_cell_'
 
   style = ''
