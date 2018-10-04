@@ -1,13 +1,21 @@
 
-PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d, cell_x_offset, cell_y_offset,cell_size,$
+PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_offset,cell_size, arcsec=arcsec,$
                 snap = snap_in, style=style, model_str=model_str,$
                 models_dir=dir_models, rtfaceon=rtfaceon
 ;+
-; rtfaceon : rotate to faceon, if switched on, rotate the disk to be a face on one.
-; 
-; style = '' --> SEDmorph method
-;         '_star_age' --> star_age method
-; also support _eagle and _eagle_minus, but these are not well tested yet.(20-Aug-2018)
+; create spectra for the cell descibed below:
+;
+; cell_x_offset: the offset on x-axis from the center of the first galaxy
+; cell_y_offset: the offset on y-axis from the center of the first galaxy
+; cell_size    : the size of the cell, we now using square cells
+; arcsec       : if this keyword is set, the parameters above are in arcsec.
+;                Otherwise they are in kpc. Use kpc by default
+;                We do not suggest use arcsec!!! As we want keep the spectra in rest-frame
+; rtfaceon     : rotate to faceon, if switched on, rotate the disk to be a face on one.
+; style        : the spectra style, choose from the following choices
+;                  "" (empty string) --> SEDmorph method
+;                  "_star_age" --> star_age method
+;                   also support _eagle and _eagle_minus, but these are not well tested yet.(20-Aug-2018)
 ;_
 
 
@@ -22,26 +30,39 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d, cell_x_offset, cell_y_offset,ce
 ;;------------------------------------------------------------------
 
 
-  cell = 'cell'
-  ; cell = 'tracked_cell'
   if NOT KEYWORD_SET(style) then style='' else style='_'+style;;SEDMoprh style by default
-  ; style = ''
-  ;; style = '_star_age'
-  ; for i=0, 4 do print, cell, style
+;;-- set the output file name
+  outstr = '_tauv'+string(tauv,form='(F0.1)')
+  outstr = outstr+'_mu'+string(mu_d,form='(F0.1)')
+  if KEYWORD_SET(rtfaceon) then outstr=outstr+'_fo'
+;;-- set up plotting file
+  cell_str = 'cell_'+string(cell_x_offset, form='(F+0.2)')+string(cell_y_offset, form='(F+0.2)')
+  cell_str = cell_str+'_size_'+string(cell_size, form='(F0.2)' )
+  if KEYWORD_SET(arcsec) then begin
+      ;; convert the parameters value from arcsec to kpc
+      print, "Check the cell parameters in aresec"
+      print, "x_offset | y_offset | cell_size"
+      print, cell_x_offset, cell_y_offset,cell_size
+      ; converting
+      kpc_in_arcsec = angdiam_fib(redshift,angsize=1.0)
+      cell_x_offset = cell_x_offset * kpc_in_arcsec
+      cell_y_offset = cell_y_offset * kpc_in_arcsec
+      cell_size = cell_size * kpc_in_arcsec
+      print, "NOTE! The spectra is still in rest-frame."
+      print, "NOTE! The spectra is still in rest-frame."
+      print, "NOTE! The spectra is still in rest-frame."
+
+      cell_str = cell_str+'_in_arcsec_z'+string(redshift,form='(F0.3)')
+
+  endif
+
+  print, "Check the cell parameters in kpc"
   print, "x_offset | y_offset | cell_size"
   print, cell_x_offset, cell_y_offset,cell_size
 
-;;-- set up plotting file
-  cell_str = 'cell_'+string(cell_x_offset, form='(I+03)')+string(cell_y_offset, form='(I+03)')
-  cell_str = cell_str+'_size_'+string(cell_size, form='(F0.1)' )
-  outstr = '_tauv'+string(tauv,form='(F0.1)')
-  outstr = outstr+'_mu'+string(mu_d,form='(F0.1)')
 
-  ; outstr=outstr+'_fo' ;;fo for Face on
-  if KEYWORD_SET(rtfaceon) then outstr=outstr+'_fo'
 
-  if n_elements(snap_in) gt 0 then psfile = dir_out+cell_str+'_spectra'+outstr+'_'+string(snap_in,form='(I3.3)')+string(style)+'.ps' $
-  else psfile = dir_out+string(cell)+'_spectra'+outstr+string(style)+'.ps'
+  if n_elements(snap_in) le 0 then psfile = dir_out+cell_str+'_spectra'+outstr+string(style)+'.ps'
 
 ;;-- find snapshot filenames from gadget simulation files
   filename = file_search(dir_in+'/*.hdf5',count=nsnap)
@@ -88,7 +109,7 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d, cell_x_offset, cell_y_offset,ce
 ;;-- Loop over all snapshots
 ;;------------------------------------------------------------------
 
-  ps1c, psfile
+  if n_elements(snap_in) le 0 then ps1c, psfile
   time = systime(1)
 
   mass_young = dblarr(nsnap)
@@ -100,10 +121,15 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d, cell_x_offset, cell_y_offset,ce
      str_snap = (strsplit(filename_short,'_',/extract))[1] ;don't use i as could be only doing a single snapshot
 
      print, 'SEDM2_SPEC building spectrum for snapshot:'+str_snap
-
+ ;;-- make a directory for each data cube.
+     data_cube_dir = "DataCube"+outstr+'_'+str_snap+string(style)+'/'
+     if file_test(dir_out+data_cube_dir) eq 0 then spawn, 'mkdir '+ dir_out+data_cube_dir
+     if n_elements(snap_in) gt 0 then psfile = dir_out+data_cube_dir+cell_str+'.ps' & ps1c, psfile
 ;;-- outfile (single snapshot, all components, all orientations)
-     outfile_fits = dir_out+ cell_str+'_spec'+outstr+'_'+str_snap+string(style)+'.fits'
-
+     outfile_fits = dir_out+ data_cube_dir+'spec_'+cell_str+'.fits'
+     print, outfile_fits
+     print, psfile
+     ; wait, 10
 ;;-- output arrays for each component of the final image
      spec_g_old = (spec_g_young = (spec_ns_old = (spec_ns_young = (spec_os_old = (spec_os_young = fltarr(nlambda))))))
 
@@ -126,15 +152,11 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d, cell_x_offset, cell_y_offset,ce
       ;;rotate to faceon
       if KEYWORD_SET(rtfaceon) then begin
         ; outstr=outstr+'_fo' ;;fo for Face on
-        print, psfile
-        print, outfile_fits
-        ; print, "Rotation"
-        ; print, "check gas.x[0], before rotation", gas.x[0]
         theta1=0.
         phi1 = 0.
         ;; Calculate rotation matrix
         fileseq_ex = (strsplit(dir_in,'/',/extract))[-1] ;;ex for EXtracted
-        print, fileseq_ex
+        ; print, fileseq_ex
         orbit = strmid(fileseq_ex, strlen(fileseq_ex)-2, 2 )
         if orbit eq '07' then theta1 = -109 & phi1 = -60
         pi = !CONST.pi
@@ -145,9 +167,6 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d, cell_x_offset, cell_y_offset,ce
         ;;do the rotation
         ; print, n_elements(gas.x)
         xyz_gas = transpose(rotate ## [[gas.x-center[0]],[gas.y-center[1]],[gas.z-center[2]]])
-        ; help, xyz_gas
-        ; help, reform(xyz_gas[0,*])
-        ; help, gas.x
 
         gas.x = reform(xyz_gas[0,*]) + center[0]
         gas.y = reform(xyz_gas[1,*]) + center[1]
@@ -164,10 +183,8 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d, cell_x_offset, cell_y_offset,ce
 
 
 
-      ; print, center
       center[0] += cell_x_offset
       center[1] += cell_y_offset
-      ; print, center
       print, 'oldstars_minid', oldstars_minid
 
       print,"cell_size", cell_size
@@ -177,15 +194,10 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d, cell_x_offset, cell_y_offset,ce
       print, "Check newstars:"
       get_center_ind, newstars, cen_part_ind, center=center, box_size=cell_size
       newstar_cen_ind = cen_part_ind
-      ; print, n_elements(newstar_cen_ind)
-      ; print, total(newstar_cen_ind)
-      ; print, n_elements(stars)
       print, "Check stars:"
       get_center_ind, stars, cen_part_ind, center=center, box_size=cell_size
       ;print, cen_part_ind
       stars = stars[cen_part_ind]
-      ; print, n_elements(stars)
-      ; print, n_elements(gas)
       print, "Check gas:"
       get_center_ind, gas, cen_part_ind, center=center, box_size=cell_size
       gas_cen_ind = cen_part_ind
@@ -202,9 +214,6 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d, cell_x_offset, cell_y_offset,ce
      if ind_newstars[0] ne -1 then nnewstars = n_elements(ind_newstars) else nnewstars = 0
      if nnewstars+noldstars ne nstars then stop
      print, 'starnum', nnewstars, noldstars, nstars
-     print, 'gasnum', ngas
-     print, 'gasnum', ngas
-     print, 'gasnum', ngas
      print, 'gasnum', ngas
 
 ;;-- fill up ind_ssp star structures
@@ -228,23 +237,15 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d, cell_x_offset, cell_y_offset,ce
        if style ne "_star_age" then begin
           ;;-- gas
           if ngas gt 0 then begin
-	     ; print, "total(gassfh[*,j]):      "
-	     ; print, total(gassfh[*,j])
              if age_ssp[j] le 0.01 then spec_g_young = spec_g_young+total(gassfh[*,j])*ssps_lum[*,j] $
              else spec_g_old = spec_g_old+total(gassfh[*,j])*ssps_lum[*,j]
           endif
 
-	  ; print, "total(spec_g_old), total(spec_g_young)"
-	  ; print, total(spec_g_old), total(spec_g_young)
           ;;-- new stars
           if nnewstars gt 0 then begin
-	     ; print, "total(newstarsfh[*,j]):      "
-	     ; print, total(newstarsfh[*,j])
              if age_ssp[j] le 0.01 then spec_ns_young = spec_ns_young+total(newstarsfh[*,j])*ssps_lum[*,j] $
              else spec_ns_old = spec_ns_old+total(newstarsfh[*,j])*ssps_lum[*,j]
           endif
-	  ; print, "total(spec_ns_old), total(spec_ns_young)"
-	  ; print, total(spec_ns_old), total(spec_ns_young)
         endif ;;style
 
         ;;-- old stars

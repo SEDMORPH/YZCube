@@ -19,12 +19,18 @@
 ; KEYWORD PARAMETERS:
 ;
 ;       SNAPID: default all
-;	REDSHIFT: default 0.04
+;	      REDSHIFT: default 0.04
 ;       TAUV: default 1.0
 ;       MU_D: default 0.3
 ;
 ;       SDSSIMAGE: =1 to create a mock SDSS image. Note that z!=0.
 ;       IMAGESIZE: For SDSSIMAGE: default 1; in arcmin
+;       cell_spectra: create spectra for the cell descibed below:
+;                    cell_x_offset: the offset on x-axis from the center of the first galaxy
+;                    cell_y_offset: the offset on y-axis from the center of the first galaxy
+;                    cell_size: the size of the cell, we now using square cells
+;                    arcsec: if this keyword is set, the parameters above are in arcsec.
+;                            Otherwise they are in kpc. Use kpc by default
 ;
 ; EXAMPLE:
 ;       SEDM2_RUN, snapID=75,/skipgas
@@ -54,7 +60,7 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
     sdssimage=sdssimage,imagesize=imagesize, faceon=faceon, sfrmovie=sfrmovie, sdssmovie=sdssmovie, $
     hyperion=hyperion, gassfh = gassfh,  movieorientation=movieorientation,spectra=spectra,pca=pca, $
     centerslist=centerslist, cen_spectra=cen_spectra, $
-    cell_spectra=cell_spectra, cell_x_offset=cell_x_offset, cell_y_offset=cell_y_offset, cell_size=cell_size,$
+    cell_spectra=cell_spectra, cell_x_offset=cell_x_offset, cell_y_offset=cell_y_offset, cell_size=cell_size, arcsec=arcsec,$
     spec_style=spec_style, rtfaceon=rtfaceon
 
   if n_elements(fileseq) eq 0 then begin
@@ -149,7 +155,7 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
 ;; Create  optical spectra for a cell
 ;;------------------------------------------------------------------
 
- if keyword_Set(cell_spectra) then SEDM2_cell_spec, dir_in, dir_out,tauv,mu_d,  cell_x_offset, cell_y_offset,cell_size, $
+ if keyword_Set(cell_spectra) then SEDM2_cell_spec, dir_in, dir_out,tauv,mu_d,redshift,  cell_x_offset, cell_y_offset,cell_size, arcsec=arcsec,$
                                           snap = snapID, style = spec_style, rtfaceon=rtfaceon, model_str=model_str, models_dir=dir_models
 
 ;;------------------------------------------------------------------
