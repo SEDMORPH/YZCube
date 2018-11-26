@@ -1,4 +1,4 @@
-;+
+one_comp_dust;+
 ; NAME:
 ;	SEDM2_RUN
 ;
@@ -61,7 +61,7 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
     hyperion=hyperion, gassfh = gassfh,  movieorientation=movieorientation,spectra=spectra,pca=pca, $
     centerslist=centerslist, cen_spectra=cen_spectra, $
     cell_spectra=cell_spectra, cell_x_offset=cell_x_offset, cell_y_offset=cell_y_offset, cell_size=cell_size, arcsec=arcsec,$
-    spec_style=spec_style, rtfaceon=rtfaceon
+    spec_style=spec_style, rtfaceon=rtfaceon, one_comp_dust=one_comp_dust
 
   if n_elements(fileseq) eq 0 then begin
      print, 'please provide input file sequence'
@@ -156,7 +156,8 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
 ;;------------------------------------------------------------------
 
  if keyword_Set(cell_spectra) then SEDM2_cell_spec, dir_in, dir_out,tauv,mu_d,redshift,  cell_x_offset, cell_y_offset,cell_size, arcsec=arcsec,$
-                                          snap = snapID, style = spec_style, rtfaceon=rtfaceon, model_str=model_str, models_dir=dir_models
+                                          snap = snapID, style = spec_style, rtfaceon=rtfaceon, model_str=model_str, models_dir=dir_models,$
+                                          one_comp_dust=one_comp_dust
 
 ;;------------------------------------------------------------------
 ;; Create spectral indices
