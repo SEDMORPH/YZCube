@@ -1,7 +1,7 @@
 
 PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_offset,cell_size, arcsec=arcsec,$
                 snap = snap_in, style=style, model_str=model_str,$
-                models_dir=dir_models, rtfaceon=rtfaceon
+                models_dir=dir_models, rtfaceon=rtfaceon, one_comp_dust=one_comp_dust
 ;+
 ; create spectra for the cell descibed below:
 ;
@@ -16,6 +16,7 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
 ;                  "" (empty string) --> SEDmorph method
 ;                  "_star_age" --> star_age method
 ;                   also support _eagle and _eagle_minus, but these are not well tested yet.(20-Aug-2018)
+; one_comp_dust : use tau_old for all stars, i.e. tau_young = tau_old
 ;_
 
 
@@ -35,6 +36,7 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
   outstr = '_tauv'+string(tauv,form='(F0.1)')
   outstr = outstr+'_mu'+string(mu_d,form='(F0.1)')
   if KEYWORD_SET(rtfaceon) then outstr=outstr+'_fo'
+  if KEYWORD_SET(one_comp_dust) then outstr=outstr+'_one_comp_dust'
 ;;-- set up plotting file
   cell_str = 'cell_'+string(cell_x_offset, form='(F+0.2)')+string(cell_y_offset, form='(F+0.2)')
   cell_str = cell_str+'_size_'+string(cell_size, form='(F0.2)' )
@@ -104,6 +106,7 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
 ;;------------------------------------------------------------------
   tau_young = mu_d*tauv*( (5500./lambda)^0.7) + (1-mu_d)*tauv*( (5500./lambda)^1.3)
   tau_old = mu_d*tauv*( (5500./lambda)^0.7)
+  if KEYWORD_SET(one_comp_dust) then tau_young = tau_old
 
 ;;------------------------------------------------------------------
 ;;-- Loop over all snapshots

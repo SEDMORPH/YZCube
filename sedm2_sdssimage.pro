@@ -101,7 +101,7 @@ END
 
 
 PRO SEDM2_SDSSIMAGE, dir_in, dir_out, dir_filters, dir_code, filterlist, redshift, tauv, mu_d,imagesize,faceon=faceon,$
-                snap=snap_in,model_str=model_str,models_dir=models_dir, rotate_seed=rotate_seed
+                snap=snap_in,model_str=model_str,models_dir=models_dir, rotate_seed=rotate_seed, one_comp_dust=one_comp_dust
 
 
 
@@ -148,6 +148,7 @@ PRO SEDM2_SDSSIMAGE, dir_in, dir_out, dir_filters, dir_code, filterlist, redshif
   outstr = outstr+'_tauv'+string(tauv,form='(F0.1)')
   outstr = outstr+'_mu'+string(mu_d,form='(F0.1)')
   outstr = outstr+'_'+string(imagesize,form='(I0)')+'arcmin'
+  if KEYWORD_SET(one_comp_dust) then outstr=outstr+'_one_comp_dust'
 
   if n_elements(snap_in) gt 0 then psfile = dir_out+'sdssimage'+outstr+'_'+string(snap_in,form='(I3.3)')+'.ps' $
   else psfile = dir_out+'sdssimage'+outstr+'.ps'
@@ -201,7 +202,7 @@ PRO SEDM2_SDSSIMAGE, dir_in, dir_out, dir_filters, dir_code, filterlist, redshif
 
 ;;-- decide the nx and ny note the grid!!! The grids need to be generated for every orientation seperately
   SEDM2_SDSSGRID, xx,yy,nx,ny,redshift,imagesize=imagesize
-  
+
 
 ;;-- distance to the galaxy
   dist = lumdist(redshift,H0=hubparam*100,omega_m=omega_m,lambda=omega_l,/silent)*Mpc_in_cm
@@ -214,6 +215,7 @@ PRO SEDM2_SDSSIMAGE, dir_in, dir_out, dir_filters, dir_code, filterlist, redshif
 ;; photometry.
   tau_young = mu_d*tauv*( (5500./ll_eff)^0.7) + (1-mu_d)*tauv*( (5500./ll_eff)^1.3)
   tau_old = mu_d*tauv*( (5500./ll_eff)^0.7)
+  if KEYWORD_SET(one_comp_dust) then tau_young = tau_old
 
 ;;------------------------------------------------------------------
 ;;-- Loop over all snapshots
@@ -223,7 +225,7 @@ PRO SEDM2_SDSSIMAGE, dir_in, dir_out, dir_filters, dir_code, filterlist, redshif
   time = systime(1)
 
   mass_young = dblarr(nsnap,norien)
-  
+
   ;;------------yrzheng, for a moving box
   ;; read in the centers list for all snapshots
   temp =  file_search(dir_in+'*_???.hdf5',count=tot_nsnap)
@@ -284,7 +286,7 @@ PRO SEDM2_SDSSIMAGE, dir_in, dir_out, dir_filters, dir_code, filterlist, redshif
 ;;   images in jansky. ~10 secs
 ;;------------------------------------------------------------------
         time = systime(1)
-        
+
         ;;---use the center of the first halo as the center of the grid
         snapnum = round(float(str_snap))
         two_center = centerlist[*, snapnum]
