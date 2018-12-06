@@ -1,4 +1,4 @@
-one_comp_dust;+
+;+
 ; NAME:
 ;	SEDM2_RUN
 ;
@@ -31,6 +31,8 @@ one_comp_dust;+
 ;                    cell_size: the size of the cell, we now using square cells
 ;                    arcsec: if this keyword is set, the parameters above are in arcsec.
 ;                            Otherwise they are in kpc. Use kpc by default
+;       one_comp_dust: use 1-component dust instead of the default 2-component mag_AB_dust
+;                      adopt tau_old for all stars, i.e. tau_young = tau_old
 ;
 ; EXAMPLE:
 ;       SEDM2_RUN, snapID=75,/skipgas
@@ -130,7 +132,8 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
 
      SEDM2_sdssimage, dir_in, dir_out, dir_filters,dir_code,filterlist, redshift, tauv,mu_d, imagesize,$
                       snap = snapID, model_str=model_str, $
-                      models_dir=dir_models,rotate_seed=rotate_seed, faceon=faceon
+                      models_dir=dir_models,rotate_seed=rotate_seed, faceon=faceon,$
+                      one_comp_dust=one_comp_dust
 
   endif
 
@@ -140,7 +143,7 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
 ;;------------------------------------------------------------------
 
   if keyword_Set(spectra) then SEDM2_spec, dir_in, dir_out,tauv,mu_d, $
-                                           snap = snapID, model_str=model_str, models_dir=dir_models
+                                           snap = snapID, model_str=model_str, models_dir=dir_models, one_comp_dust=one_comp_dust
 
 
 
@@ -168,7 +171,7 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
 ;; Create spectral indices
 ;;------------------------------------------------------------------
 
-  if keyword_Set(pca) then SEDM2_pca, dir_in, dir_out, tauv, mu_d, dir_pca_data;, snap = snapID
+  if keyword_Set(pca) then SEDM2_pca, dir_in, dir_out, tauv, mu_d, dir_pca_data, one_comp_dust=one_comp_dust; snap = snapID
 
 
 
@@ -184,7 +187,7 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
      if n_elements(imagesize) eq 0 then imagesize=1.
      if n_elements(movieorientation) eq 0 then movieorientation=0 ;face-on
 
-     SEDM2_sdssmovie, dir_in, dir_out, redshift, tauv, mu_d,imagesize, movieorientation
+     SEDM2_sdssmovie, dir_in, dir_out, redshift, tauv, mu_d,imagesize, movieorientation, one_comp_dust=one_comp_dust;
   endif
 
   ;;-- optical spectra movies

@@ -7,7 +7,7 @@
 ;;*
 ;;******************************************************************
 
-PRO SEDM2_PCA, dir_in, dir_out, tauv, mu_d, dir_pca_data
+PRO SEDM2_PCA, dir_in, dir_out, tauv, mu_d, dir_pca_data,one_comp_dust=one_comp_dust
 
   @sedm2_codeunits.inc
   ; @sedm2_directories.inc
@@ -16,6 +16,7 @@ PRO SEDM2_PCA, dir_in, dir_out, tauv, mu_d, dir_pca_data
 ;;-- set up plotting file
   outstr = '_tauv'+string(tauv,form='(F0.1)')
   outstr = outstr+'_mu'+string(mu_d,form='(F0.1)')
+  if KEYWORD_SET(one_comp_dust) then outstr=outstr+'_one_comp_dust'
 
   cell = ''
   ; cell = 'cen_'
@@ -41,6 +42,10 @@ PRO SEDM2_PCA, dir_in, dir_out, tauv, mu_d, dir_pca_data
   sfr_smooth = smooth(SFR_tot_Msun_yr,smooth_time) ;boxcar smooth, median doesn't work
 
   tau_young_ha = mu_d*tauv*( (5500./6564.)^0.7) + (1-mu_d)*tauv*( (5500./6564.)^1.3)
+  if KEYWORD_SET(one_comp_dust) then begin
+     tau_old = mu_d*tauv*( (5500./6564.)^0.7)
+     tau_young_ha = tau_old
+  endif
 
 
   ;;-- get time between snapshots. Silly way to do it, but I

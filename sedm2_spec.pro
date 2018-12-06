@@ -1,6 +1,6 @@
 PRO SEDM2_SPEC, dir_in, dir_out, tauv,mu_d, $
                 snap = snap_in, model_str=model_str, $
-                models_dir=dir_models
+                models_dir=dir_models, one_comp_dust=one_comp_dust
 
 ;;------------------------------------------------------------------
 ;; Parameters
@@ -15,6 +15,9 @@ PRO SEDM2_SPEC, dir_in, dir_out, tauv,mu_d, $
 ;;-- set up plotting file
   outstr = '_tauv'+string(tauv,form='(F0.1)')
   outstr = outstr+'_mu'+string(mu_d,form='(F0.1)')
+  ; if KEYWORD_SET(rtfaceon) then outstr=outstr+'_fo' ;
+  if KEYWORD_SET(one_comp_dust) then outstr=outstr+'_one_comp_dust'
+
 
   if n_elements(snap_in) gt 0 then psfile = dir_out+'spectra'+outstr+'_'+string(snap_in,form='(I3.3)')+'.ps' $
   else psfile = dir_out+'spectra'+outstr+'.ps'
@@ -57,6 +60,7 @@ PRO SEDM2_SPEC, dir_in, dir_out, tauv,mu_d, $
 ;;------------------------------------------------------------------
   tau_young = mu_d*tauv*( (5500./lambda)^0.7) + (1-mu_d)*tauv*( (5500./lambda)^1.3)
   tau_old = mu_d*tauv*( (5500./lambda)^0.7)
+  if KEYWORD_SET(one_comp_dust) then tau_young = tau_old
 
 ;;------------------------------------------------------------------
 ;;-- Loop over all snapshots
@@ -172,7 +176,7 @@ PRO SEDM2_SPEC, dir_in, dir_out, tauv,mu_d, $
      oplot, lambda, -alog(spec_g_dust[*,0]/spec_g[*,0]),color=cgcolor('purple')
      oplot, lambda, -alog(spec_ns_dust[*,0]/spec_ns[*,0]),color=cgcolor('cyan')
      oplot, lambda, -alog(spec_os_dust[*,0]/spec_os[*,0]),color=cgcolor('red')
-     
+
 
      ;; shorteer wavelength range
      plot, lambda,spec_notau[*,0],/xs,xr=[3000,9000],xtitle='Wavelength [A]',ytitle=textoidl('Luminosity [L_\odot/A]'),title='Orien 0: Snapshot '+str_snap+' N*='+string(nstars,form='(I0)')

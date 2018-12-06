@@ -36,7 +36,7 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
   outstr = '_tauv'+string(tauv,form='(F0.1)')
   outstr = outstr+'_mu'+string(mu_d,form='(F0.1)')
   if KEYWORD_SET(rtfaceon) then outstr=outstr+'_fo'
-  if KEYWORD_SET(one_comp_dust) then outstr=output+'_one_comp_dust'
+  if KEYWORD_SET(one_comp_dust) then outstr=outstr+'_one_comp_dust'
 ;;-- set up plotting file
   cell_str = 'cell_'+string(cell_x_offset, form='(F+0.2)')+string(cell_y_offset, form='(F+0.2)')
   cell_str = cell_str+'_size_'+string(cell_size, form='(F0.2)' )
