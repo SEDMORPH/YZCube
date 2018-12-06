@@ -20,7 +20,7 @@ ALL directories should now be set in the sedm2_directories.inc file. This can th
 
 About branches:
 > master       : Working on metallicity currently.
-> all_old_dust : allow 1-component dust, use tau_old for all particles
+> revise_tau   : allow 1-component dust, use tau_old for all particles
 >BD_cell_spec  : Create cell spectra for bulge stars and Disk stars only.
 		 This will need one more file and modification on sedm2_run but 		 we just need this function temporaily. So I create this branch 		 for this special use.(yrzheng 20-Aug-2018)
 >test_spec_ind : Try to make the PCA function work --> Finished and has been mergered into master branch. Do not work on this branch any more!
