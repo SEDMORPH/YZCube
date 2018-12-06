@@ -61,7 +61,7 @@
 PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu_d, $
     sdssimage=sdssimage,imagesize=imagesize, faceon=faceon, sfrmovie=sfrmovie, sdssmovie=sdssmovie, $
     hyperion=hyperion, gassfh = gassfh,  movieorientation=movieorientation,spectra=spectra,pca=pca, $
-    centerslist=centerslist, cen_spectra=cen_spectra, $
+    centerslist=centerslist, $
     cell_spectra=cell_spectra, cell_x_offset=cell_x_offset, cell_y_offset=cell_y_offset, cell_size=cell_size, arcsec=arcsec,$
     spec_style=spec_style, rtfaceon=rtfaceon, one_comp_dust=one_comp_dust
 
@@ -147,12 +147,6 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
 
 
 
-;;------------------------------------------------------------------
-;; Create  optical spectra for the center 1kpc part
-;;------------------------------------------------------------------
-
- if keyword_Set(cen_spectra) then SEDM2_cen_spec, dir_in, dir_out,tauv,mu_d,$
-                                          snap = snapID, model_str=model_str, models_dir=dir_models
 
 ;;------------------------------------------------------------------
 ;; Create  optical spectra for a cell
