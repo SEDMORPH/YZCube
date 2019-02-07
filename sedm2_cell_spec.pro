@@ -39,7 +39,6 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
   if KEYWORD_SET(one_comp_dust) then outstr=outstr+'_one_comp_dust'
 ;;-- set up plotting file
   cell_str = 'cell_'+string(cell_x_offset, form='(F+0.2)')+string(cell_y_offset, form='(F+0.2)')
-  cell_str = cell_str+'_size_'+string(cell_size, form='(F0.2)' )
   if KEYWORD_SET(arcsec) then begin
       ;; convert the parameters value from arcsec to kpc
       print, "Check the cell parameters in aresec"
@@ -53,10 +52,10 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
       print, "NOTE! The spectra is still in rest-frame."
       print, "NOTE! The spectra is still in rest-frame."
       print, "NOTE! The spectra is still in rest-frame."
-
-      cell_str = cell_str+'_in_arcsec_z'+string(redshift,form='(F0.3)')
-
+      ; cell_str = cell_str+'_in_arcsec_z'+string(redshift,form='(F0.3)')
   endif
+
+  cell_str = cell_str+'_size_'+string(cell_size, form='(F0.2)' )
 
   print, "Check the cell parameters in kpc"
   print, "x_offset | y_offset | cell_size"
@@ -125,7 +124,7 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
 
      print, 'SEDM2_SPEC building spectrum for snapshot:'+str_snap
  ;;-- make a directory for each data cube.
-     data_cube_dir = "DataCube"+outstr+'_'+str_snap+string(style)+'/'
+     data_cube_dir = "DataCube"+outstr+'_'+str_snap+string(style)+'_size_'+string(cell_size, form='(F0.2)' )+'/'
      if file_test(dir_out+data_cube_dir) eq 0 then spawn, 'mkdir '+ dir_out+data_cube_dir
      if n_elements(snap_in) gt 0 then psfile = dir_out+data_cube_dir+cell_str+'.ps' & ps1c, psfile
 ;;-- outfile (single snapshot, all components, all orientations)
