@@ -84,10 +84,18 @@ PRO SEDM2_GASSFH, fileseq, indir, outdir=outdir, quiet=quiet,  $
   AttrID= H5A_OPEN_NAME(H5G_OPEN(file_id, '/Header'), 'Time')
   Snap_Time0 = H5A_READ(AttrID)*SimnUnitTime/hubparam
 
-  file_id = H5F_OPEN(filename_long[150])
+  ;; comment out the orignal block and use a sligtly unsafer way to test gassfh for a subset >>>>>>
+  ;; do remember to change it back
+  ; file_id = H5F_OPEN(filename_long[150])
+  ; AttrID= H5A_OPEN_NAME(H5G_OPEN(file_id, '/Header'), 'Time')
+  ; Snap_Time150 = H5A_READ(AttrID)*SimnUnitTime/hubparam
+  ; delta_age = (Snap_Time150 - Snap_Time0)/150*1d9 ;in yr
+
+  file_id = H5F_OPEN(filename_long[1])
   AttrID= H5A_OPEN_NAME(H5G_OPEN(file_id, '/Header'), 'Time')
-  Snap_Time150 = H5A_READ(AttrID)*SimnUnitTime/hubparam
-  delta_age = (Snap_Time150 - Snap_Time0)/150*1d9 ;in yr
+  Snap_Time1 = H5A_READ(AttrID)*SimnUnitTime/hubparam
+  delta_age = (Snap_Time1 - Snap_Time0)/1.0*1d9 ;in yr
+  ;;<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< test subset
 
 
 ;;-- read ssps from SSP files to get time steps
@@ -213,6 +221,7 @@ PRO SEDM2_GASSFH, fileseq, indir, outdir=outdir, quiet=quiet,  $
 ;;-- Add the gas SFR during this snapshot + each preceeding snapshot at the correct SSP-index
         ;; the snapshots have delta_age of 2e7 years, here we spread the SFR out as a top hat into SSP bins with t-delta_t/2<t<t+delta_t/2
         ;; this has to be a cumulative for loop, otherwise non-unique ind_ssp's don't get counted
+        gas_IMH = ind_metal_history[gas.id -1,*]
         for j=0,i do begin
           ;;SF_length is the time that particles keep forming stars
           ;;For the current snapshot, SF_length is only half of the delta_age
@@ -221,7 +230,10 @@ PRO SEDM2_GASSFH, fileseq, indir, outdir=outdir, quiet=quiet,  $
 
           for mm=0, N_z-1 do begin
 
-             ind_metal = where(ind_metal_history[*,j] eq mm, mcount)
+             ; ind_metal = where(ind_metal_history[*,j] eq mm, mcount)
+      	     ind_metal = where(gas_IMH[*,j] eq mm, mcount)
+             ; help, ind_metal
+             ; if j eq 0 then print, mm, n_elements(ind_metal)
              if mcount gt 0 then begin ;;do have gas particles with this metallicity
                ;all the SSPs between this+0.5 and this-0.5 snapshot and all particles attached this metal value
                ind_all = where(age_ssp*1e9 gt (i-j-0.5)*delta_age and age_ssp*1e9 lt (i-j+0.5)*delta_age, count)
@@ -277,15 +289,16 @@ PRO SEDM2_GASSFH, fileseq, indir, outdir=outdir, quiet=quiet,  $
         if i eq 0 then continue
 ;;-- Use the SFH of the progenitor gas particles to assign the SFH to the star particles
 ;;-- add the gas SFR during all preceeding snapshots at the correct SSP-index
-        for j=0,i-1 do begin
+        for j=0,i-1 do begin ;; for new stars, sfr[newstars.id-1, i] = 0, so we don't bother to run j=i
+
           ;;SF_length is the time that particles keep forming stars
           ;;For the current snapshot, SF_length is only half of the delta_age
-
           if j lt i then SF_length = delta_age else SF_length = delta_age/2.0
           ; if SF_length lt delta_age then print,i,j
 
           for mm=0, N_z-1 do begin
-            ind_metal = where(stars_IMH[*,j] eq mm, mcount)
+      	    ind_metal = where(stars_IMH[*,j] eq mm, mcount)
+            ; ind_metal = where(ind_metal_history[*,j] eq mm, mcount)
             if mcount gt 0 then begin ;;do have gas particles with this metallicity
                ; ind_all = where(age_ssp*1e9 gt (j-0.5)*delta_age and age_ssp*1e9 lt (j+0.5)*delta_age,count)
                ind_all = where(age_ssp*1e9 gt (i-j-0.5)*delta_age and age_ssp*1e9 lt (i-j+0.5)*delta_age,count);all the SSPs between this+0.5 and this-0.5 snapshot
@@ -327,7 +340,7 @@ PRO SEDM2_GASSFH, fileseq, indir, outdir=outdir, quiet=quiet,  $
 ;;------------------------------------------------------------------
 ;;-- output file
 
-     save, gassfh, newstarsfh, ind_metal_history, file=outfile, /compress
+     save, gassfh, newstarsfh, ind_metal_history,sfr, file=outfile, /compress
 
      if not(keyword_set(quiet)) then splog, 'Saved file: ' + outfile
 
