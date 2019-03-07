@@ -7,7 +7,7 @@
 ;;*
 ;;******************************************************************
 
-PRO SEDM2_PCA, dir_in, dir_out, tauv, mu_d, dir_pca_data,one_comp_dust=one_comp_dust
+PRO SEDM2_PCA, dir_in, dir_out, tauv, mu_d, dir_pca_data,one_comp_dust=one_comp_dust, style=style
 
   @sedm2_codeunits.inc
   ; @sedm2_directories.inc
@@ -18,21 +18,23 @@ PRO SEDM2_PCA, dir_in, dir_out, tauv, mu_d, dir_pca_data,one_comp_dust=one_comp_
   outstr = outstr+'_mu'+string(mu_d,form='(F0.1)')
   if KEYWORD_SET(one_comp_dust) then outstr=outstr+'_one_comp_dust'
 
-  cell = ''
+  ; cell = ''
   ; cell = 'cen_'
   ; cell = 'tracked_cell_'
 
-  style = ''
+  ; style = ''
   ; style = '_eagle'
   ; style = '_eagle_minus'
   ; style='_star_age'
-  filename = file_search(dir_out+cell+'spec'+outstr+'_???'+style+'.fits',count=nsnap)
-
-  ;;for code test
-  ; nsnap=5
-
-  outfile = dir_out+cell+'pcs'+outstr+style+'.fits'
-  psfile = dir_out+cell+'pcs'+outstr+style+'.ps'
+  if (strlowcase(style) eq "sedmorph") || (style eq '') then begin
+    filename = file_search(dir_out+'spec'+outstr+'_???.fits',count=nsnap)
+    outfile = dir_out+'pcs'+outstr+'.fits'
+    psfile = dir_out+'pcs'+outstr+'.ps'
+  endif else begin
+    filename = file_search(dir_out+'spec'+outstr+'_???'+'_'+style+'.fits',count=nsnap)
+    outfile = dir_out+'pcs'+outstr+'_'+style+'.fits'
+    psfile = dir_out+'pcs'+outstr+'_'+style+'.ps'
+  endelse
 
 ;;-- SFR for EQW Halpha
   SFR_logfile  = dir_in+'sfr.txt'
@@ -76,6 +78,7 @@ PRO SEDM2_PCA, dir_in, dir_out, tauv, mu_d, dir_pca_data,one_comp_dust=one_comp_
 
   for i=0,nsnap-1 do begin
 
+    ; print, filename[i]
      data = mrdfits(filename[i],1,hdr,/silent)
 
      wave = data.wave
