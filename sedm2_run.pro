@@ -61,7 +61,7 @@
 PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu_d, $
     sdssimage=sdssimage,imagesize=imagesize, faceon=faceon, sfrmovie=sfrmovie, sdssmovie=sdssmovie, $
     hyperion=hyperion, gassfh = gassfh,  movieorientation=movieorientation,spectra=spectra,pca=pca, $
-    centerslist=centerslist, $
+    centerslist=centerslist, spec_star_age=spec_star_age, with_metal=with_metal, $
     cell_spectra=cell_spectra, cell_x_offset=cell_x_offset, cell_y_offset=cell_y_offset, cell_size=cell_size, arcsec=arcsec,$
     spec_style=spec_style, rtfaceon=rtfaceon, one_comp_dust=one_comp_dust
 
@@ -145,8 +145,8 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
   if keyword_Set(spectra) then SEDM2_spec, dir_in, dir_out,tauv,mu_d, $
                                            snap = snapID, model_str=model_str, models_dir=dir_models, one_comp_dust=one_comp_dust
 
-
-
+  if keyword_Set(spec_star_age) then SEDM2_spec_star_age, dir_in, dir_out,tauv,mu_d, $
+                                         snap = snapID, model_str=model_str, models_dir=dir_models, uni_metal=uni_metal
 
 ;;------------------------------------------------------------------
 ;; Create  optical spectra for a cell
