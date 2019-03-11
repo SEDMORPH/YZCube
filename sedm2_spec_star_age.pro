@@ -54,14 +54,37 @@ PRO SEDM2_SPEC_STAR_AGE, dir_in, dir_out, tauv,mu_d, $
 ;;------------------------------------------------------------------
 
 ;;-- read SSPs !!!! NEED TO ADD DIFFERENT METALLICITIES
+if KEYWORD_SET(with_metal) then begin
+  Z_keys = Z_models.keys
+  ; read in the SSPs for the first metallicity value, record all the results
+  ssps = SEDM2_GETSSPS(dir_models, model_str,Z_keys[0])
+  age_ssp = ssps.age
+  nssps = n_elements(age_ssp)
+  lambda = ssps.lambda;[ind]
+  nlambda = n_elements(lambda)
+  ssps_lum_metal = fltarr(nlambda, nssps, N_z)
+  ssps_lum_metal[*,*,0] = ssps.seds;[ind,*]
+  ssps = 0
+
+  ; read in the SSPs for the resest metallicity value, record the Luminosity only
+  for mm=1, N_z-1 do begin
+    ssps = SEDM2_GETSSPS(dir_models, model_str,Z_keys[mm])
+    ssps_lum_metal[*,*,mm] = ssps.seds;[ind,*]
+    ssps = 0
+  endfor
+
+endif else begin
+  ;use the a unifiy Metallicity (m62, i.e. Z=0.02 )for all stars
   ssps = SEDM2_GETSSPS(dir_models, model_str,'62')
   age_ssp = ssps.age
   nssps = n_elements(age_ssp)
 ;  ind = where(ssps.lambda ge ll_min and ssps.lambda le ll_max,nlambda)
   lambda = ssps.lambda;[ind]
+  nlambda = n_elements(lambda)
   ssps_lum = ssps.seds;[ind,*]
   ssps = 0
-  nlambda = n_elements(lambda)
+endelse
+
 ;;------------------------------------------------------------------
 ;;-- dust attenuation
 ;;------------------------------------------------------------------
@@ -125,47 +148,43 @@ PRO SEDM2_SPEC_STAR_AGE, dir_in, dir_out, tauv,mu_d, $
 
 ;;-- loop over SSPs to build integrated spectra
     if KEYWORD_SET(with_metal) then begin
-      ; print, "Uni_metal"
-      ; for j=0,nssps-1 do begin
-      ;
-      ;   if noldstars gt 0 then begin
-      ;     ind = where(stars[ind_oldstars].ind_ssp eq j,nn2)
-      ;     if ind[0] ne -1 then begin
-      ;       if age_ssp[j] le 0.01 then spec_os_young = spec_os_young+total(stars[ind_oldstars[ind]].mass)*ssps_lum[*,j] $
-      ;       else spec_os_old = spec_os_old+total(stars[ind_oldstars[ind]].mass)*ssps_lum[*,j]
-      ;     endif
-      ;   endif
-      ; endfor
 
       print, "Using metal"
       star_metal_bin = uintarr(noldstars)
       sedm2_z_ind, stars.metal, Z_models.values, Z_ind
       star_metal_bin = Z_ind
-      for mm=0, N_z-1 do begin
 
+      accum_nstar_metal = 0 ;accumulative count of stars
+      print, "Z_keys   number of the stars in this bins"
+      for mm=0, N_z-1 do begin
         ind_metal = where(star_metal_bin eq mm, mcount)
         if mcount gt 0 then begin
-            ;;==================== can be changed so that we can read it for once only
-            Z_keys = Z_models.keys
             print, Z_keys[mm], mcount
-            ssps = SEDM2_GETSSPS(dir_models, model_str,Z_keys[mm])
-            ssps_lum = ssps.seds;[ind,*]
-            ssps = 0
-            ;;==================== can be changed so that we can read it for once only
+            accum_nstar_metal += mcount
 
             mm_stars = stars[ind_metal]
             for j=0,nssps-1 do begin
               ind = where(mm_stars.ind_ssp eq j,nn2)
               ; print, nn2
               if ind[0] ne -1 then begin
-                 if age_ssp[j] le 0.01 then spec_os_young = spec_os_young+total(mm_stars[ind].mass)*ssps_lum[*,j] $
-                 else spec_os_old = spec_os_old+total(mm_stars[ind].mass)*ssps_lum[*,j]
+                 if age_ssp[j] le 0.01 then spec_os_young = spec_os_young+total(mm_stars[ind].mass)*ssps_lum_metal[*,j,mm] $
+                 else spec_os_old = spec_os_old+total(mm_stars[ind].mass)*ssps_lum_metal[*,j,mm]
               endif ; have particle in the ssp
             endfor
 
         endif ; have particles in the meatllicity bin
 
       endfor ; for loop of metallicity
+      ;check that all stars have been counted
+      if accum_nstar_metal ne nstars then  begin
+        print, "Not all stars are counted for the spectra, stop here"
+        stop
+      endif else begin
+        print, "nstars          total star number in all metallicity bins"
+        print, nstars, accum_nstar_metal
+        print, "All stars have been counted."
+      endelse
+
     endif else begin ; loop over meatllicity bins
 
       print, "Uni_metal"
