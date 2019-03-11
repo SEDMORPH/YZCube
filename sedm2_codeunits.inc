@@ -29,5 +29,5 @@
 
 n_Z=7
 Z_models = replicate({keys:'', values:0.0},n_Z)
-Z_models.keys=['m22', 'm32', 'm42', 'm52', 'm62', 'm72', 'm82']
+Z_models.keys=['22', '32', '42', '52', '62', '72', '82']
 Z_models.values=[0.0001, 0.0004, 0.004, 0.008, 0.02, 0.05, 0.1]

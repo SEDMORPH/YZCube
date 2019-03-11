@@ -86,7 +86,7 @@ PRO SEDM2_SPEC_STAR_AGE, dir_in, dir_out, tauv,mu_d, $
      print, 'SEDM2_SPEC building spectrum for snapshot:'+str_snap
 
 ;;-- outfile (single snapshot, all components, all orientations)
-     if KEYWORD_SET(with_metal) then beginj
+     if KEYWORD_SET(with_metal) then begin
        outfile_fits = dir_out+'spec'+outstr+'_'+str_snap+'_star_age_with_metal.fits'
      endif else begin
        outfile_fits = dir_out+'spec'+outstr+'_'+str_snap+'_star_age.fits'

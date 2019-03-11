@@ -146,7 +146,7 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
                                            snap = snapID, model_str=model_str, models_dir=dir_models, one_comp_dust=one_comp_dust
 
   if keyword_Set(spec_star_age) then SEDM2_spec_star_age, dir_in, dir_out,tauv,mu_d, $
-                                         snap = snapID, model_str=model_str, models_dir=dir_models, uni_metal=uni_metal
+                                         snap = snapID, model_str=model_str, models_dir=dir_models, with_metal=with_metal
 
 ;;------------------------------------------------------------------
 ;; Create  optical spectra for a cell
