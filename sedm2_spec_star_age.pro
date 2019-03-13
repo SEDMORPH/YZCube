@@ -190,16 +190,15 @@ endelse
       print, "Uni_metal"
       for j=0,nssps-1 do begin
 
-        if noldstars gt 0 then begin
-          ind = where(stars[ind_oldstars].ind_ssp eq j,nn2)
-          if ind[0] ne -1 then begin
-            if age_ssp[j] le 0.01 then spec_os_young = spec_os_young+total(stars[ind_oldstars[ind]].mass)*ssps_lum[*,j] $
-            else spec_os_old = spec_os_old+total(stars[ind_oldstars[ind]].mass)*ssps_lum[*,j]
-          endif
+        ; if noldstars gt 0 then begin
+        ind = where(stars.ind_ssp eq j,nn2)
+        if ind[0] ne -1 then begin
+          if age_ssp[j] le 0.01 then spec_os_young = spec_os_young+total(stars[ind].mass)*ssps_lum[*,j] $
+          else spec_os_old = spec_os_old+total(stars[ind].mass)*ssps_lum[*,j]
         endif
+        ; endif
       endfor
     endelse ; use meatllicity
-    ; endfor
 
 
 ;;-- sum components and add dust
