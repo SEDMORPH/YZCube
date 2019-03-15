@@ -20,7 +20,7 @@
 ;;******************************************************************
 ;;******************************************************************
 
-FUNCTION SEDM2_GETSSPS, models_dir, model, Z, nlambda, nssps, age_ssp,  vel=vel
+FUNCTION SEDM2_GETSSPS, models_dir, model, Z, nlambda, nssps, age_ssp,  vel=vel, use_ised=use_ised
 
 
 ; if ((model eq 'CB08') or (model eq 'cb08')) then $
@@ -30,14 +30,23 @@ FUNCTION SEDM2_GETSSPS, models_dir, model, Z, nlambda, nssps, age_ssp,  vel=vel
         stem = models_dir+'bc2003_hr_xmiless_m' ;$
 ; else message, 'model not recognised'
 
-;;-- check string i.e. single metallicity
-  if size(Z,/type) eq 7 then filename = stem+Z+'_chab_ssp.ised' $
-  else message, 'interpolation between metallicities not yet implemented'
 
 ;;-- read in SSPs
-  seds_zerovel = SEDM2_READISED(filename,t,lambda)
+  if not KEYWORD_SET(use_ised) then begin ; used the fits file
+    filename = stem+Z+'_chab_ssp_ised.fits'
+    data = mrdfits(filename, 1, hdr)
+    lambda = data.wavelength
+    seds_zerovel = transpose(data.seds_zerovel)
+    ssp_data = mrdfits(filename, 2, hdr)
+    t = ssp_data.age_ssp  ; in Gyr
+  endif else begin ;; use the original .ised files
+  ;;-- check string i.e. single metallicity
+    if size(Z,/type) eq 7 then filename = stem+Z+'_chab_ssp.ised' $
+    else message, 'interpolation between metallicities not yet implemented'
+    seds_zerovel = SEDM2_READISED(filename,t,lambda)
 
-  t = t/1e9                     ; in Gyr to match simns
+    t = t/1e9                     ; in Gyr to match simns
+  endelse
   nlambda = n_elements(lambda)
   nssps = n_elements(t)
   age_ssp = t
