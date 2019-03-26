@@ -19,15 +19,21 @@
   Mpc_in_cm =3.08567758d24
 
 
-;;-- Metallicity dictionary, use orderedhash instead
-;Z_hash=ORDEREDHASH(['m22', 'm32', 'm42', 'm52', 'm62', 'm72', 'm82'],$
-;                [0.0001, 0.0004, 0.004, 0.008, 0.02, 0.05, 0.1])
-;;NOTE, IDL 8.2 does not support hash or orderedhash, use to separate array instead
-;Z_keys=['m22', 'm32', 'm42', 'm52', 'm62', 'm72', 'm82']
-;Z_values=[0.0001, 0.0004, 0.004, 0.008, 0.02, 0.05, 0.1]
-;n_Z = n_elements(Z_values)
+;;========= old, original, un-interpolated model=========
+;n_Z=7
+;Z_models = replicate({keys:'', values:0.0},n_Z)
+;Z_models.keys=['22', '32', '42', '52', '62', '72', '82']
+;Z_models.values=[0.0001, 0.0004, 0.004, 0.008, 0.02, 0.05, 0.1]
+;;========= old, original, un-interpolated model=========
 
-n_Z=7
+
+
+;;========= interpolated model=========
+n_Z=14
 Z_models = replicate({keys:'', values:0.0},n_Z)
-Z_models.keys=['22', '32', '42', '52', '62', '72', '82']
-Z_models.values=[0.0001, 0.0004, 0.004, 0.008, 0.02, 0.05, 0.1]
+Z_models.keys=['22', '32', '42', '52', '55', '58', '62', '63', '64', '65', '67', '68', '72', '82']
+Z_models.values=[0.000100, 0.000400, 0.004000, 0.008000, 0.012000, 0.016000, 0.020000, 0.023000, 0.026000, 0.030000, 0.035000, 0.040000, 0.050000, 0.100000 ]
+;;========= interpolated model=========
+
+
+
