@@ -26,3 +26,9 @@ About branches:
 >test_spec_ind : Try to make the PCA function work --> Finished and has been mergered into master branch. Do not work on this branch any more!
 > v2.0         : Finish checking SFH.
 > v1.0.        : Can find centers of galaxies.
+
+
+Notes:
+> have a strange feature for sfrmovie and sdssmovie functions:
+	I tried "ssh -Y" to log onto vela with my mac and then got a problem when saving the gif files, it just save empty file.
+	I then used "ssh -X" to log onto vela with linux machines, everything goes fine.
