@@ -2,7 +2,7 @@
 PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_offset,cell_size, arcsec=arcsec,$
                 snap = snap_in, style=style, model_str=model_str,$
                 models_dir=dir_models, rtfaceon=rtfaceon, one_comp_dust=one_comp_dust, $
-                with_metal=with_metal
+                with_metal=with_metal, cir_fib=cir_fib
 ;+
 ; create spectra for the cell descibed below:
 ;
@@ -61,7 +61,11 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
       ; cell_str = cell_str+'_in_arcsec_z'+string(redshift,form='(F0.3)')
   endif
 
-  cell_str = cell_str+'_size_'+string(cell_size, form='(F0.2)' )
+  if KEYWORD_SET(cir_fib) then begin
+    cell_str = cell_str+'_cir_size_'+string(cell_size, form='(F0.2)' )
+  endif else begin
+    cell_str = cell_str+'_size_'+string(cell_size, form='(F0.2)' )
+  endelse
 
   print, "Check the cell parameters in kpc"
   print, "x_offset | y_offset | cell_size"
@@ -156,7 +160,12 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
 
      print, 'SEDM2_SPEC building spectrum for snapshot:'+str_snap
  ;;-- make a directory for each data cube.
-     data_cube_dir = "DataCube"+outstr+'_'+str_snap+string(file_style)+'_size_'+string(cell_size, form='(F0.2)' )
+     if KEYWORD_SET(cir_fib) then begin
+       data_cube_dir = "DataCube"+outstr+'_'+str_snap+string(file_style)+'_cir_size_'+string(cell_size, form='(F0.2)' )
+     endif else begin
+       data_cube_dir = "DataCube"+outstr+'_'+str_snap+string(file_style)+'_size_'+string(cell_size, form='(F0.2)' )
+     endelse
+
      if KEYWORD_SET(with_metal) then data_cube_dir=data_cube_dir+'_with_metal'
      data_cube_dir = data_cube_dir + '/'
      if file_test(dir_out+data_cube_dir) eq 0 then spawn, 'mkdir '+ dir_out+data_cube_dir
@@ -259,7 +268,7 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
  ;;-- read gas particle and new star particle SFHs for this snapshot - 0.5 secs
      if style ne "star_age" then begin
     	 savefile = dir_in+filename_short+'_gassfh'+file_style+'.sav'
-	 restore, savefile
+	     restore, savefile
     	 gassfh=gassfh[gas_cen_ind,*]
     	 newstarsfh=newstarsfh[newstar_cen_ind, *]
      endif

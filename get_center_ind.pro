@@ -1,4 +1,4 @@
-pro get_center_ind, particle, cen_part_ind, center=center, box_size=box_size
+pro get_center_ind, particle, cen_part_ind, center=center, box_size=box_size, cir_fib=cir_fib
   ;;comment out print, center
   xc=center[0]
   yc=center[1]
@@ -45,6 +45,10 @@ pro get_center_ind, particle, cen_part_ind, center=center, box_size=box_size
   temp = temp * yg_ind
   ;temp = xl_ind * xg_ind * yl_ind * yg_ind
   print,"particle number after requiring y > ymin" ,total(temp)
+
+  if KEYWORD_SET(cir_fib) then begin
+    print, "working"
+  endif
 
   cen_part_ind = where(temp eq 1)
 
