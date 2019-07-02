@@ -47,7 +47,19 @@ pro get_center_ind, particle, cen_part_ind, center=center, box_size=box_size, ci
   print,"particle number after requiring y > ymin" ,total(temp)
 
   if KEYWORD_SET(cir_fib) then begin
-    print, "working"
+    ; print, "Searching particles inside the circle"
+    rlist = fltarr(N_part)
+    rlist += box_size + 1.0 ;Initialize to  box_size+1, (i.e. something greater than box_size)
+    in_box_idx = where(temp eq 1)
+    rlist[in_box_idx]=sqrt( (xlist[in_box_idx] - xc)^2 + (ylist[in_box_idx] -yc)^2  )
+    ; print, rlist[in_box_idx]
+
+    in_circle = where( rlist le (box_size/2.0) )
+    in_circle_idx = intarr(N_part)
+    in_circle_idx[in_circle] = 1
+    temp = temp * in_circle_idx
+    print, "particle number after requiring distance < r" ,total(temp)
+
   endif
 
   cen_part_ind = where(temp eq 1)

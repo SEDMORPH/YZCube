@@ -8,7 +8,7 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
 ;
 ; cell_x_offset: the offset on x-axis from the center of the first galaxy
 ; cell_y_offset: the offset on y-axis from the center of the first galaxy
-; cell_size    : the size of the cell, we now using square cells
+; cell_size    : the size of the cell, side length of a square fiber or diameter of a circular fiber
 ; arcsec       : if this keyword is set, the parameters above are in arcsec.
 ;                Otherwise they are in kpc. Use kpc by default
 ;                We do not suggest use arcsec!!! As we want keep the spectra in rest-frame
@@ -17,7 +17,8 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
 ;                  "" (empty string) --> SEDmorph method
 ;                  "star_age" --> star_age method
 ;                   also support _eagle and _eagle_minus, but these are not well tested yet.(20-Aug-2018)
-; one_comp_dust : use tau_old for all stars, i.e. tau_young = tau_old
+; one_comp_dust: use tau_old for all stars, i.e. tau_young = tau_old
+; cir_fib      : circular fiber
 ;_
 
 
@@ -237,14 +238,14 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
       ind_newstars = where(stars.id lt oldstars_minid, nnewstars,compl=ind_oldstars)
       newstars = stars[ind_newstars]
       print, "Check newstars:"
-      get_center_ind, newstars, cen_part_ind, center=center, box_size=cell_size
+      get_center_ind, newstars, cen_part_ind, center=center, box_size=cell_size, cir_fib=cir_fib
       newstar_cen_ind = cen_part_ind
       print, "Check stars:"
-      get_center_ind, stars, cen_part_ind, center=center, box_size=cell_size
+      get_center_ind, stars, cen_part_ind, center=center, box_size=cell_size, cir_fib=cir_fib
       ;print, cen_part_ind
       stars = stars[cen_part_ind]
       print, "Check gas:"
-      get_center_ind, gas, cen_part_ind, center=center, box_size=cell_size
+      get_center_ind, gas, cen_part_ind, center=center, box_size=cell_size, cir_fib=cir_fib
       gas_cen_ind = cen_part_ind
       gas = gas[gas_cen_ind]
       ; print, n_elements(gas)
