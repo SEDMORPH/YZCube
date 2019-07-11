@@ -52,6 +52,51 @@ FUNCTION check_size,cell_size=cell_size, fib_radius=fib_radius, cir_fib=cir_fib
 END
 
 
+FUNCTION params_in_kpc, cell_x_offset, cell_y_offset, cell_size=cell_size, fib_radius=fib_radius,$
+  arcsec=arcsec, cir_fib=cir_fib, redshift=redshift
+;+
+; check whether the parameters are in kpc unit. If not, convert to kpc
+;-
+  if KEYWORD_SET(arcsec) then begin
+      ;; convert the parameters value from arcsec to kpc
+      print, "Check the cell parameters in aresec"
+      if KEYWORD_SET(cir_fib) then begin
+        print, "x_offset | y_offset | fiber radius"
+        print, cell_x_offset, cell_y_offset, fib_radius
+      endif else begin
+        print, "x_offset | y_offset | cell_size"
+        print, cell_x_offset, cell_y_offset,cell_size
+      endelse
+      ; converting
+      kpc_in_arcsec = ANGDIAM_FIB( redshift, angsize=1.0)
+      cell_x_offset = cell_x_offset * kpc_in_arcsec
+      cell_y_offset = cell_y_offset * kpc_in_arcsec
+      if KEYWORD_SET(cir_fib) then begin
+        fib_radius = fib_radius * kpc_in_arcsec
+      endif else begin
+        cell_size = cell_size * kpc_in_arcsec
+      endelse
+
+      print, "NOTE! The spectra is still in rest-frame."
+      print, "NOTE! The spectra is still in rest-frame."
+      print, "NOTE! The spectra is still in rest-frame."
+      ; cell_str = cell_str+'_in_arcsec_z'+string(redshift,form='(F0.3)')
+  endif
+
+  print, "Check the cell parameters in kpc"
+  if KEYWORD_SET(cir_fib) then begin
+    print, "x_offset | y_offset | fiber radius"
+    print, cell_x_offset, cell_y_offset, fib_radius
+    return, [cell_x_offset, cell_y_offset, fib_radius]
+  endif else begin
+    print, "x_offset | y_offset | cell_size"
+    print, cell_x_offset, cell_y_offset,cell_size
+    return, [cell_x_offset, cell_y_offset, cell_size]
+  endelse
+
+END
+
+
 
 PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_offset,$
     		cell_size=cell_size, cir_fib=cir_fib, fib_radius=fib_radius, arcsec=arcsec, $
@@ -109,46 +154,17 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
 ;;-- set up plotting file
   cell_str = 'cell_'+string(cell_x_offset, form='(F+0.2)')+string(cell_y_offset, form='(F+0.2)')
 
-  ; xys = params_in_kpc(cell_x_offset, cell)
-
-  if KEYWORD_SET(arcsec) then begin
-      ;; convert the parameters value from arcsec to kpc
-      print, "Check the cell parameters in aresec"
-      if KEYWORD_SET(cir_fib) then begin
-        cell_str = cell_str+'_cir_radius_'+string(fib_radius, form='(F0.2)' )
-        print, "x_offset | y_offset | fiber radius"
-        print, cell_x_offset, cell_y_offset, fib_radius
-      endif else begin
-        cell_str = cell_str+'_size_'+string(cell_size, form='(F0.2)' )
-        print, "x_offset | y_offset | cell_size"
-        print, cell_x_offset, cell_y_offset,cell_size
-      endelse
-      ; converting
-      kpc_in_arcsec = angdiam_fib(redshift,angsize=1.0)
-      cell_x_offset = cell_x_offset * kpc_in_arcsec
-      cell_y_offset = cell_y_offset * kpc_in_arcsec
-      if KEYWORD_SET(cir_fib) then begin
-        fib_radius = fib_radius * kpc_in_arcsec
-      endif else begin
-        cell_size = cell_size * kpc_in_arcsec
-      endif
-
-      print, "NOTE! The spectra is still in rest-frame."
-      print, "NOTE! The spectra is still in rest-frame."
-      print, "NOTE! The spectra is still in rest-frame."
-      ; cell_str = cell_str+'_in_arcsec_z'+string(redshift,form='(F0.3)')
-  endif
-
-  print, "Check the cell parameters in kpc"
+  xys = params_in_kpc(cell_x_offset, cell_y_offset, cell_size=cell_size, fib_radius=fib_radius, arcsec=arcsec, cir_fib=cir_fib, redshift=redshift)
+  cell_x_offset = xys[0]
+  cell_y_offset = xys[1]
   if KEYWORD_SET(cir_fib) then begin
+    fib_radius=xys[2]
     cell_str = cell_str+'_cir_radius_'+string(fib_radius, form='(F0.2)' )
-    print, "x_offset | y_offset | fiber radius"
-    print, cell_x_offset, cell_y_offset, fib_radius
   endif else begin
+    cell_size=xys[2]
     cell_str = cell_str+'_size_'+string(cell_size, form='(F0.2)' )
-    print, "x_offset | y_offset | cell_size"
-    print, cell_x_offset, cell_y_offset,cell_size
   endelse
+
 
 
 
@@ -312,23 +328,23 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
       center[1] += cell_y_offset
       print, 'oldstars_minid', oldstars_minid
 
-      print,"cell_size", cell_size
+      ; print,"cell_size", cell_size
       ;print, stars[0]
       ind_newstars = where(stars.id lt oldstars_minid, nnewstars,compl=ind_oldstars)
       newstars = stars[ind_newstars]
       print, "Check newstars:"
-      get_center_ind, newstars, cen_part_ind, mass_weight, center=center, cell_size=cell_size, cir_fib=cir_fib, with_PSF=with_PSF
+      get_center_ind, newstars, cen_part_ind, mass_weight, center=center, cell_size=cell_size,fib_radius=fib_radius, cir_fib=cir_fib, with_PSF=with_PSF
       newstar_cen_ind = cen_part_ind
       newstar_mass_weight = mass_weight
       newstars.mass = newstars.mass * mass_weight
       newstars = newstars[newstar_cen_ind]
       print, "Check stars:"
-      get_center_ind, stars, cen_part_ind, mass_weight, center=center, cell_size=cell_size, cir_fib=cir_fib, with_PSF=with_PSF
+      get_center_ind, stars, cen_part_ind, mass_weight, center=center, cell_size=cell_size,fib_radius=fib_radius, cir_fib=cir_fib, with_PSF=with_PSF
       ;print, cen_part_ind
       stars.mass = stars.mass * mass_weight
       stars = stars[cen_part_ind]
       print, "Check gas:"
-      get_center_ind, gas, cen_part_ind, mass_weight, center=center, cell_size=cell_size, cir_fib=cir_fib, with_PSF=with_PSF
+      get_center_ind, gas, cen_part_ind, mass_weight, center=center, cell_size=cell_size,fib_radius=fib_radius, cir_fib=cir_fib, with_PSF=with_PSF
       gas_mass_weight = mass_weight
       gas.mass = gas.mass * mass_weight
       gas_cen_ind = cen_part_ind
