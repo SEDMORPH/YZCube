@@ -1,14 +1,73 @@
+FUNCTION check_size,cell_size=cell_size, fib_radius=fib_radius, cir_fib=cir_fib
+;+
+; cell_size    : the size of the cell, side length of a square fiber or diameter of a circular fiber
+; cir_fib      : use circular fiber
+; fib_radius   : the radius of the circular fiber, if unset, use (cell_size/2.0)
+;                if both fib_radius and cell_size is set, ignore cell_size when using cir_fib
+;                ignore fib_radius when using sqaure fiber
+;-
 
-PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_offset,cell_size, arcsec=arcsec,$
-                snap = snap_in, style=style, model_str=model_str,$
+  if n_elements(cell_size) eq 0 then cs_set = 0 else cs_set = 1
+  if n_elements(fib_radius) eq 0 then fr_set = 0 else fr_set = 1
+  ; print, cell_size
+
+  if (cs_set eq 1) && (fr_set eq 1) then begin
+    print, "Both cell_size and fib_radius are set."
+    if KEYWORD_SET(cir_fib) then begin
+      print, "Please specify fib_radius only as we are now using a circular fiber."
+    endif else begin
+      print, "Please specify cell_size only as we are now using a sqaure fiber."
+    endelse
+    stop
+  endif ; both params are set
+
+
+  if (cs_set eq 1) AND (fr_set eq 0) then begin
+    if KEYWORD_SET(cir_fib) then begin
+      print, "We are now using a sqaure fiber, please specify the side length of the fiber by cell_size!"
+      stop
+    endif else begin
+      print, "cell_size:", cell_size
+    endelse
+  endif
+
+  if (cs_set eq 0) AND (fr_set eq 1) then begin
+    if KEYWORD_SET(cir_fib) then begin
+      print, "fib_radius:", fib_radius
+    endif else begin
+      print, "We are now using a sqaure fiber, please specify the side length of the fiber by cell_size!"
+      stop
+    endelse
+  endif ; both params are set
+
+  if (cs_set eq 0) AND (fr_set eq 0) then begin
+    if KEYWORD_SET(cir_fib) then begin
+      print,"Please specify the radius of the circular fiber by fib_radius."
+    endif else begin
+      print,"Please specify the side length of the square fiber by cell_size."
+    endelse
+    stop
+  endif
+
+END
+
+
+
+PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_offset,$
+    		cell_size=cell_size, cir_fib=cir_fib, fib_radius=fib_radius, arcsec=arcsec, $
+                snap=snap_in, style=style, model_str=model_str,$
                 models_dir=dir_models, rtfaceon=rtfaceon, one_comp_dust=one_comp_dust, $
-                with_metal=with_metal, cir_fib=cir_fib
+                with_metal=with_metal, with_PSF=with_PSF
 ;+
 ; create spectra for the cell descibed below:
 ;
 ; cell_x_offset: the offset on x-axis from the center of the first galaxy
 ; cell_y_offset: the offset on y-axis from the center of the first galaxy
 ; cell_size    : the size of the cell, side length of a square fiber or diameter of a circular fiber
+; cir_fib      : use circular fiber
+; fib_radius   : the radius of the circular fiber, if unset, use (cell_size/2.0)
+;                if both fib_radius and cell_size is set, ignore cell_size when using cir_fib
+;                ignore fib_radius when using sqaure fiber
 ; arcsec       : if this keyword is set, the parameters above are in arcsec.
 ;                Otherwise they are in kpc. Use kpc by default
 ;                We do not suggest use arcsec!!! As we want keep the spectra in rest-frame
@@ -18,7 +77,6 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
 ;                  "star_age" --> star_age method
 ;                   also support _eagle and _eagle_minus, but these are not well tested yet.(20-Aug-2018)
 ; one_comp_dust: use tau_old for all stars, i.e. tau_young = tau_old
-; cir_fib      : circular fiber
 ;_
 
 
@@ -33,6 +91,10 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
 ;;------------------------------------------------------------------
   @sedm2_codeunits.inc
 
+
+  ;check the parameters, stop the program if the right size parameter is not set
+  temp=check_size(cell_size=cell_size, fib_radius=fib_radius, cir_fib=cir_fib)
+
   if NOT KEYWORD_SET(style) then style='' ;;SEDMoprh style by default
   ;; use add an underscore for non-SEDmorph style, so that we use file_style for the input and output files
   if (strlowcase(style) eq "sedmorph") || (style eq '') then begin
@@ -46,31 +108,47 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
   if KEYWORD_SET(one_comp_dust) then outstr=outstr+'_one_comp_dust'
 ;;-- set up plotting file
   cell_str = 'cell_'+string(cell_x_offset, form='(F+0.2)')+string(cell_y_offset, form='(F+0.2)')
+
+  ; xys = params_in_kpc(cell_x_offset, cell)
+
   if KEYWORD_SET(arcsec) then begin
       ;; convert the parameters value from arcsec to kpc
       print, "Check the cell parameters in aresec"
-      print, "x_offset | y_offset | cell_size"
-      print, cell_x_offset, cell_y_offset,cell_size
+      if KEYWORD_SET(cir_fib) then begin
+        cell_str = cell_str+'_cir_radius_'+string(fib_radius, form='(F0.2)' )
+        print, "x_offset | y_offset | fiber radius"
+        print, cell_x_offset, cell_y_offset, fib_radius
+      endif else begin
+        cell_str = cell_str+'_size_'+string(cell_size, form='(F0.2)' )
+        print, "x_offset | y_offset | cell_size"
+        print, cell_x_offset, cell_y_offset,cell_size
+      endelse
       ; converting
       kpc_in_arcsec = angdiam_fib(redshift,angsize=1.0)
       cell_x_offset = cell_x_offset * kpc_in_arcsec
       cell_y_offset = cell_y_offset * kpc_in_arcsec
-      cell_size = cell_size * kpc_in_arcsec
+      if KEYWORD_SET(cir_fib) then begin
+        fib_radius = fib_radius * kpc_in_arcsec
+      endif else begin
+        cell_size = cell_size * kpc_in_arcsec
+      endif
+
       print, "NOTE! The spectra is still in rest-frame."
       print, "NOTE! The spectra is still in rest-frame."
       print, "NOTE! The spectra is still in rest-frame."
       ; cell_str = cell_str+'_in_arcsec_z'+string(redshift,form='(F0.3)')
   endif
 
+  print, "Check the cell parameters in kpc"
   if KEYWORD_SET(cir_fib) then begin
-    cell_str = cell_str+'_cir_size_'+string(cell_size, form='(F0.2)' )
+    cell_str = cell_str+'_cir_radius_'+string(fib_radius, form='(F0.2)' )
+    print, "x_offset | y_offset | fiber radius"
+    print, cell_x_offset, cell_y_offset, fib_radius
   endif else begin
     cell_str = cell_str+'_size_'+string(cell_size, form='(F0.2)' )
+    print, "x_offset | y_offset | cell_size"
+    print, cell_x_offset, cell_y_offset,cell_size
   endelse
-
-  print, "Check the cell parameters in kpc"
-  print, "x_offset | y_offset | cell_size"
-  print, cell_x_offset, cell_y_offset,cell_size
 
 
 
@@ -162,12 +240,13 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
      print, 'SEDM2_SPEC building spectrum for snapshot:'+str_snap
  ;;-- make a directory for each data cube.
      if KEYWORD_SET(cir_fib) then begin
-       data_cube_dir = "DataCube"+outstr+'_'+str_snap+string(file_style)+'_cir_size_'+string(cell_size, form='(F0.2)' )
+       data_cube_dir = "DataCube"+outstr+'_'+str_snap+string(file_style)+'_cir_radius_'+string(fib_radius, form='(F0.2)' )
      endif else begin
        data_cube_dir = "DataCube"+outstr+'_'+str_snap+string(file_style)+'_size_'+string(cell_size, form='(F0.2)' )
      endelse
 
      if KEYWORD_SET(with_metal) then data_cube_dir=data_cube_dir+'_with_metal'
+     if KEYWORD_SET(with_PSF) then data_cube_dir=data_cube_dir+'_with_PSF'
      data_cube_dir = data_cube_dir + '/'
      if file_test(dir_out+data_cube_dir) eq 0 then spawn, 'mkdir '+ dir_out+data_cube_dir
      if n_elements(snap_in) gt 0 then psfile = dir_out+data_cube_dir+cell_str+'.ps' & ps1c, psfile
@@ -238,14 +317,20 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
       ind_newstars = where(stars.id lt oldstars_minid, nnewstars,compl=ind_oldstars)
       newstars = stars[ind_newstars]
       print, "Check newstars:"
-      get_center_ind, newstars, cen_part_ind, center=center, box_size=cell_size, cir_fib=cir_fib
+      get_center_ind, newstars, cen_part_ind, mass_weight, center=center, cell_size=cell_size, cir_fib=cir_fib, with_PSF=with_PSF
       newstar_cen_ind = cen_part_ind
+      newstar_mass_weight = mass_weight
+      newstars.mass = newstars.mass * mass_weight
+      newstars = newstars[newstar_cen_ind]
       print, "Check stars:"
-      get_center_ind, stars, cen_part_ind, center=center, box_size=cell_size, cir_fib=cir_fib
+      get_center_ind, stars, cen_part_ind, mass_weight, center=center, cell_size=cell_size, cir_fib=cir_fib, with_PSF=with_PSF
       ;print, cen_part_ind
+      stars.mass = stars.mass * mass_weight
       stars = stars[cen_part_ind]
       print, "Check gas:"
-      get_center_ind, gas, cen_part_ind, center=center, box_size=cell_size, cir_fib=cir_fib
+      get_center_ind, gas, cen_part_ind, mass_weight, center=center, cell_size=cell_size, cir_fib=cir_fib, with_PSF=with_PSF
+      gas_mass_weight = mass_weight
+      gas.mass = gas.mass * mass_weight
       gas_cen_ind = cen_part_ind
       gas = gas[gas_cen_ind]
       ; print, n_elements(gas)

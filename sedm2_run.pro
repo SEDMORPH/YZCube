@@ -29,11 +29,13 @@
 ;                    cell_x_offset: the offset on x-axis from the center of the first galaxy
 ;                    cell_y_offset: the offset on y-axis from the center of the first galaxy
 ;                    cell_size: the size of the cell, we now using square cells
+;                    cir_fib: use a circular fiber when creating cell_spectra
+;                    fib_radius   : the radius of the circular fiber, if unset, use (cell_size/2.0)
 ;                    arcsec: if this keyword is set, the parameters above are in arcsec.
 ;                            Otherwise they are in kpc. Use kpc by default
+;                    with_PSF: if set, include the PSF effect when creating cell spectra
 ;       one_comp_dust: use 1-component dust instead of the default 2-component mag_AB_dust
 ;                      adopt tau_old for all stars, i.e. tau_young = tau_old
-;       cir_fib: use a circular fiber when creating cell_spectra
 ;
 ; EXAMPLE:
 ;       SEDM2_RUN, snapID=75,/skipgas
@@ -63,8 +65,9 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
     sdssimage=sdssimage,imagesize=imagesize, faceon=faceon, sfrmovie=sfrmovie, sdssmovie=sdssmovie, $
     hyperion=hyperion, gassfh = gassfh,  movieorientation=movieorientation,spectra=spectra,pca=pca, $
     centerslist=centerslist, spec_star_age=spec_star_age, with_metal=with_metal, $
-    cell_spectra=cell_spectra, cell_x_offset=cell_x_offset, cell_y_offset=cell_y_offset, cell_size=cell_size, arcsec=arcsec,$
-    spec_style=spec_style, rtfaceon=rtfaceon, one_comp_dust=one_comp_dust, cir_fib=cir_fib
+    cell_spectra=cell_spectra, cell_x_offset=cell_x_offset, cell_y_offset=cell_y_offset, $
+    cell_size=cell_size, cir_fib=cir_fib, fib_radius=fib_radius, arcsec=arcsec, $
+    spec_style=spec_style, rtfaceon=rtfaceon, one_comp_dust=one_comp_dust, with_PSF=with_PSF
 
   if n_elements(fileseq) eq 0 then begin
      print, 'please provide input file sequence'
@@ -88,7 +91,7 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
 
   if n_elements(cell_x_offset) eq 0 then cell_x_offset = 0.0  ; if not specified, use the center of the first galaxy
   if n_elements(cell_y_offset) eq 0 then cell_y_offset = 0.0  ; if not specified, use the center of the first galaxy
-  if n_elements(cell_size) eq 0 then cell_size = 1.0          ; default cell size, 1 kpc * 1kpc
+  ; if n_elements(cell_size) eq 0 then cell_size = 1.0          ; default cell size, 1 kpc * 1kpc
   if n_elements(spec_style) eq 0 then spec_style = ''         ; SEDMoprh style by default
 
 
@@ -153,9 +156,10 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
 ;; Create  optical spectra for a cell
 ;;------------------------------------------------------------------
 
- if keyword_Set(cell_spectra) then SEDM2_cell_spec, dir_in, dir_out,tauv,mu_d,redshift,  cell_x_offset, cell_y_offset,cell_size, arcsec=arcsec,$
+ if keyword_Set(cell_spectra) then SEDM2_cell_spec, dir_in, dir_out,tauv,mu_d,redshift,  cell_x_offset, cell_y_offset,$
+    					                            cell_size=cell_size, cir_fib=cir_fib, fib_radius=fib_radius, arcsec=arcsec, $
                                           snap = snapID, style = spec_style, rtfaceon=rtfaceon, model_str=model_str, models_dir=dir_models,$
-                                          one_comp_dust=one_comp_dust, with_metal=with_metal, cir_fib=cir_fib
+                                          one_comp_dust=one_comp_dust, with_metal=with_metal, with_PSF=with_PSF
 
 ;;------------------------------------------------------------------
 ;; Create spectral indices
