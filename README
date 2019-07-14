@@ -16,15 +16,13 @@ The output from the code is currently set to go to  /Users/vw8/data/SEDMORPH/Sim
 
 ALL directories should now be set in the sedm2_directories.inc file. This can then be stored locally to avoid the swapping of directories everytime a new version is pulled from bitbucket!
 
-
-
 About branches:
-> master       : Working on metallicity currently.
-	>> the star_age method can now work with metallicity 
+> master       : Working on circular fibers and PSF effect.
 > revise_tau   : allow 1-component dust, use tau_old for all particles
 >BD_cell_spec  : Create cell spectra for bulge stars and Disk stars only.
 		 This will need one more file and modification on sedm2_run but 		 we just need this function temporaily. So I create this branch 		 for this special use.(yrzheng 20-Aug-2018)
 >test_spec_ind : Try to make the PCA function work --> Finished and has been mergered into master branch. Do not work on this branch any more!
+> v3.0         : The star_age method can now work with metallicity; Create MaNGA cube with square fibers but without PSF effect.
 > v2.0         : Finish checking SFH.
 > v1.0.        : Can find centers of galaxies.
 
