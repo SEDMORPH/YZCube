@@ -16,8 +16,6 @@ The output from the code is currently set to go to  /Users/vw8/data/SEDMORPH/Sim
 
 ALL directories should now be set in the sedm2_directories.inc file. This can then be stored locally to avoid the swapping of directories everytime a new version is pulled from bitbucket!
 
-
-
 About branches:
 > master       : Working on circular fibers and PSF effect.
 > revise_tau   : allow 1-component dust, use tau_old for all particles

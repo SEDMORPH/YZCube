@@ -106,7 +106,7 @@ endelse
      filename_short = (strsplit(tmp,'.',/extract))[0]
      str_snap = (strsplit(filename_short,'_',/extract))[1] ;don't use i as could be only doing a single snapshot
 
-     print, 'SEDM2_SPEC building spectrum for snapshot:'+str_snap
+     print, 'SEDM2_SPEC_STAR_AGE building spectrum for snapshot:'+str_snap
 
 ;;-- outfile (single snapshot, all components, all orientations)
      if KEYWORD_SET(with_metal) then begin
