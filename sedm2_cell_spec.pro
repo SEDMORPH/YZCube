@@ -400,7 +400,8 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
 
           oldstars = stars[ind_oldstars]
           if KEYWORD_SET(with_metal) then begin
-	    if style ne 'star_age' then begin
+
+            if style ne 'star_age' then begin
               print, "Meatllicity is only work for star_age method currently! --- 12-Mar-19"
               stop
             endif
