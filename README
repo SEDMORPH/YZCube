@@ -18,6 +18,7 @@ ALL directories should now be set in the sedm2_directories.inc file. This can th
 
 About branches:
 > master       : Working on circular fibers and PSF effect.
+		 Our PSF is not wavelength dependent. The PSF around the band that the 4000A break falls into is used at all other wavelength. For example, if the galaxy is at z=0.2, then the g-band PSF is used at all wavelength.
 > revise_tau   : allow 1-component dust, use tau_old for all particles
 >BD_cell_spec  : Create cell spectra for bulge stars and Disk stars only.
 		 This will need one more file and modification on sedm2_run but 		 we just need this function temporaily. So I create this branch 		 for this special use.(yrzheng 20-Aug-2018)
