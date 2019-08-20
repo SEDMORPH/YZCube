@@ -102,7 +102,7 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
     		cell_size=cell_size, cir_fib=cir_fib, fib_radius=fib_radius, arcsec=arcsec, $
                 snap=snap_in, style=style, model_str=model_str,$
                 models_dir=dir_models, rtfaceon=rtfaceon, one_comp_dust=one_comp_dust, $
-                with_metal=with_metal, with_PSF=with_PSF
+                with_metal=with_metal, with_PSF=with_PSF, dir_PSF_weight=dir_PSF_weight
 ;+
 ; create spectra for the cell descibed below:
 ;
@@ -333,18 +333,18 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
       ind_newstars = where(stars.id lt oldstars_minid, nnewstars,compl=ind_oldstars)
       newstars = stars[ind_newstars]
       print, "Check newstars:"
-      get_center_ind, newstars, cen_part_ind, mass_weight, center=center, cell_size=cell_size,fib_radius=fib_radius, cir_fib=cir_fib, with_PSF=with_PSF
+      get_center_ind, newstars, cen_part_ind, mass_weight, center=center, cell_size=cell_size,fib_radius=fib_radius, cir_fib=cir_fib, with_PSF=with_PSF, redshift=redshift, dir_PSF_weight=dir_PSF_weight
       newstar_cen_ind = cen_part_ind
       newstar_mass_weight = mass_weight
       newstars.mass = newstars.mass * mass_weight
       newstars = newstars[newstar_cen_ind]
       print, "Check stars:"
-      get_center_ind, stars, cen_part_ind, mass_weight, center=center, cell_size=cell_size,fib_radius=fib_radius, cir_fib=cir_fib, with_PSF=with_PSF
+      get_center_ind, stars, cen_part_ind, mass_weight, center=center, cell_size=cell_size,fib_radius=fib_radius, cir_fib=cir_fib, with_PSF=with_PSF, redshift=redshift, dir_PSF_weight=dir_PSF_weight
       ;print, cen_part_ind
       stars.mass = stars.mass * mass_weight
       stars = stars[cen_part_ind]
       print, "Check gas:"
-      get_center_ind, gas, cen_part_ind, mass_weight, center=center, cell_size=cell_size,fib_radius=fib_radius, cir_fib=cir_fib, with_PSF=with_PSF
+      get_center_ind, gas, cen_part_ind, mass_weight, center=center, cell_size=cell_size,fib_radius=fib_radius, cir_fib=cir_fib, with_PSF=with_PSF, redshift=redshift, dir_PSF_weight=dir_PSF_weight
       gas_mass_weight = mass_weight
       gas.mass = gas.mass * mass_weight
       gas_cen_ind = cen_part_ind

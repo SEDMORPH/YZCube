@@ -26,7 +26,7 @@ END
 
 PRO get_center_ind, particle, cen_part_ind,mass_weight, $
   center=center, cell_size=cell_size, fib_radius=fib_radius, $
-  cir_fib=cir_fib, with_PSF=with_PSF
+  cir_fib=cir_fib, with_PSF=with_PSF, redshift=redshift, dir_PSF_weight=dir_PSF_weight
 ;+
 ; To get the indices that tells us wether the particle should be considered.
 ; If the PSF is not required, then simply select the particles inside the cell or the circle;
@@ -101,11 +101,22 @@ PRO get_center_ind, particle, cen_part_ind,mass_weight, $
       print, "PSF function only works for circular fiber currently! --- 11-July-19"
       stop
     endif
+    if  n_elements(redshift) eq 0 then begin
+      print, "Need to specify the redshift to choose the PSF."
+      print, "As we are interested in data around 4000A and our PSF is not wavelength dependent, the PSF around the band that the 4000A break falls into is used at all other wavelength. For example, if the galaxy is at z=0.2, then the g-band PSF is used at all wavelength."
+      stop
+    endif
     print, "Calculate the mass weight with the PSF effect..."
     mass_weight = fltarr(N_part)
     ; then do the calculation
     bin_size = 0.05 ;kpc
-    filename = "PSF_mass_weight_res_0.05kpc.fits"
+    ; effective wavelength of ugriz, http://skyserver.sdss.org/dr1/en/proj/advanced/color/sdssfilters.asp
+    wave_eff = [3543.0, 4770.0, 6231.0, 7625.0, 9134.0] 
+    band_list = ['u', 'g', 'r', 'i', 'z']
+    temp = min( abs(wave_eff - 4000.0*(1+redshift)), band_id )
+    band_name = band_list[band_id] 
+    print, "redshift: ", redshift, "      band_name: ", band_name
+    filename = dir_PSF_weight+band_name+"_band_PSF_mass_weight_res_"+string(bin_size, form='(F0.2)')+'kpc.fits'
     data = mrdfits(filename, 1, hdr)
     arr_weight_bin = data.PSF_weight;read in the weight at different radius
     bin_idx = round(rlist/bin_size)
