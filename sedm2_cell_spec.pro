@@ -102,7 +102,8 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
     		cell_size=cell_size, cir_fib=cir_fib, fib_radius=fib_radius, arcsec=arcsec, $
                 snap=snap_in, style=style, model_str=model_str,$
                 models_dir=dir_models, rtfaceon=rtfaceon, one_comp_dust=one_comp_dust, $
-                with_metal=with_metal, with_PSF=with_PSF, dir_PSF_weight=dir_PSF_weight
+                with_metal=with_metal, with_PSF=with_PSF, dir_PSF_weight=dir_PSF_weight, $
+                plot_cell_spec=plot_cell_spec
 ;+
 ; create spectra for the cell descibed below:
 ;
@@ -242,7 +243,9 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
 ;;-- Loop over all snapshots
 ;;------------------------------------------------------------------
 
-  if n_elements(snap_in) le 0 then ps1c, psfile
+  if KEYWORD_SET(plot_cell_spec) then begin
+    if n_elements(snap_in) le 0 then ps1c, psfile
+  endif
   time = systime(1)
 
   mass_young = dblarr(nsnap)
@@ -265,11 +268,13 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
      if KEYWORD_SET(with_PSF) then data_cube_dir=data_cube_dir+'_with_PSF'
      data_cube_dir = data_cube_dir + '/'
      if file_test(dir_out+data_cube_dir) eq 0 then spawn, 'mkdir '+ dir_out+data_cube_dir
-     if n_elements(snap_in) gt 0 then psfile = dir_out+data_cube_dir+cell_str+'.ps' & ps1c, psfile
+     if KEYWORD_SET(plot_cell_spec) then begin
+       if n_elements(snap_in) gt 0 then psfile = dir_out+data_cube_dir+cell_str+'.ps' & ps1c, psfile
+     endif
 ;;-- outfile (single snapshot, all components, all orientations)
      outfile_fits = dir_out+ data_cube_dir+'spec_'+cell_str+'.fits'
      print, outfile_fits
-     print, psfile
+     if KEYWORD_SET(plot_cell_spec) then print, psfile
      ; wait, 10
 ;;-- output arrays for each component of the final image
      spec_g_old = (spec_g_young = (spec_ns_old = (spec_ns_young = (spec_os_old = (spec_os_young = fltarr(nlambda))))))
@@ -365,6 +370,7 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
 
 ;;-- fill up ind_ssp star structures
      if i eq 0 then plot=1 else plot=0
+     if not KEYWORD_SET(plot_cell_spec) then plot=0
      if noldstars gt 0 then SEDM2_BUILDSED, age_ssp, stars, oldstars_minid, sfr, snap_time,plot=plot
 
  ;;-- read gas particle and new star particle SFHs for this snapshot - 0.5 secs
@@ -488,53 +494,56 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
      mwrfits, struc, outfile_fits,/create
 
 
+
+     if KEYWORD_SET(plot_cell_spec) then begin
 ;;------------------------------------------------------------------
 ;;-- some figures
 ;;------------------------------------------------------------------
 
-     plot, lambda,spec_notau[*,0],/xlog,/ylog,/xs,xtitle='Wavelength [A]',ytitle=textoidl('Luminosity [L_\odot/A]'),title='Orien 0: Snapshot '+str_snap;+' N*='+string(nstars,form='(I0)')
-     oplot, lambda,spec_os[*,0],color=cgcolor('red')
-     oplot, lambda,spec_ns[*,0],color=cgcolor('cyan')
-     oplot, lambda,spec_g[*,0],color=cgcolor('purple')
+       plot, lambda,spec_notau[*,0],/xlog,/ylog,/xs,xtitle='Wavelength [A]',ytitle=textoidl('Luminosity [L_\odot/A]'),title='Orien 0: Snapshot '+str_snap;+' N*='+string(nstars,form='(I0)')
+       oplot, lambda,spec_os[*,0],color=cgcolor('red')
+       oplot, lambda,spec_ns[*,0],color=cgcolor('cyan')
+       oplot, lambda,spec_g[*,0],color=cgcolor('purple')
 
-     xyouts, 0.8,0.9,'Total',/normal
-     xyouts, 0.8,0.85,'Old stars',/normal,color=cgcolor('blue')
-     xyouts, 0.8,0.75,'New Stars',/normal,color=cgcolor('cyan')
-     xyouts, 0.8,0.7,'Gas',/normal,color=cgcolor('purple')
+       xyouts, 0.8,0.9,'Total',/normal
+       xyouts, 0.8,0.85,'Old stars',/normal,color=cgcolor('blue')
+       xyouts, 0.8,0.75,'New Stars',/normal,color=cgcolor('cyan')
+       xyouts, 0.8,0.7,'Gas',/normal,color=cgcolor('purple')
 
-     plot, lambda,spec_tau[*,0],/xlog,/ylog,/xs,xtitle='Wavelength [A]',ytitle=textoidl('Luminosity [L_\odot/A]'),title='Orien 0: Snapshot '+str_snap+' with dust'+' (cell region)';+' N*='+string(nstars,form='(I0)')
-     oplot, lambda,spec_os_dust[*,0],color=cgcolor('red')
-     oplot, lambda,spec_ns_dust[*,0],color=cgcolor('cyan')
-     oplot, lambda,spec_g_dust[*,0],color=cgcolor('purple')
+       plot, lambda,spec_tau[*,0],/xlog,/ylog,/xs,xtitle='Wavelength [A]',ytitle=textoidl('Luminosity [L_\odot/A]'),title='Orien 0: Snapshot '+str_snap+' with dust'+' (cell region)';+' N*='+string(nstars,form='(I0)')
+       oplot, lambda,spec_os_dust[*,0],color=cgcolor('red')
+       oplot, lambda,spec_ns_dust[*,0],color=cgcolor('cyan')
+       oplot, lambda,spec_g_dust[*,0],color=cgcolor('purple')
 
-     plot, lambda, -alog(spec_tau[*,0]/spec_notau[*,0]),/xlog,/xs,ytitle=textoidl('\tau_\lambda'),xtitle='Wavelength [A]'
-     oplot, lambda, -alog(spec_g_dust[*,0]/spec_g[*,0]),color=cgcolor('purple')
-     oplot, lambda, -alog(spec_ns_dust[*,0]/spec_ns[*,0]),color=cgcolor('cyan')
-     oplot, lambda, -alog(spec_os_dust[*,0]/spec_os[*,0]),color=cgcolor('red')
+       plot, lambda, -alog(spec_tau[*,0]/spec_notau[*,0]),/xlog,/xs,ytitle=textoidl('\tau_\lambda'),xtitle='Wavelength [A]'
+       oplot, lambda, -alog(spec_g_dust[*,0]/spec_g[*,0]),color=cgcolor('purple')
+       oplot, lambda, -alog(spec_ns_dust[*,0]/spec_ns[*,0]),color=cgcolor('cyan')
+       oplot, lambda, -alog(spec_os_dust[*,0]/spec_os[*,0]),color=cgcolor('red')
 
-     ;; shorteer wavelength range
-     plot, lambda,spec_notau[*,0],/xs,xr=[3000,9000],title='Orien 0: Snapshot '+str_snap+' N*='+string(nstars,form='(I0)')+' (cell region)'
-     oplot, lambda,spec_os[*,0],color=cgcolor('red')
-     oplot, lambda,spec_ns[*,0],color=cgcolor('cyan')
-     oplot, lambda,spec_g[*,0],color=cgcolor('purple')
+       ;; shorteer wavelength range
+       plot, lambda,spec_notau[*,0],/xs,xr=[3000,9000],title='Orien 0: Snapshot '+str_snap+' N*='+string(nstars,form='(I0)')+' (cell region)'
+       oplot, lambda,spec_os[*,0],color=cgcolor('red')
+       oplot, lambda,spec_ns[*,0],color=cgcolor('cyan')
+       oplot, lambda,spec_g[*,0],color=cgcolor('purple')
 
-     plot, lambda,spec_tau[*,0],/xs,xr=[3000,9000],title='Orien 0: Snapshot '+str_snap+' with dust'+' N*='+string(nstars,form='(I0)')+' (cell region)'
-     oplot, lambda,spec_os_dust[*,0],color=cgcolor('red')
-     oplot, lambda,spec_ns_dust[*,0],color=cgcolor('cyan')
-     oplot, lambda,spec_g_dust[*,0],color=cgcolor('purple')
-     print, 'gas_max',max(spec_g_dust[*,0])
-     print, 'newstar_max',max(spec_ns_dust[*,0])
-     ;print, spec_ns_dust[*,0]
-     xyouts, 0.8,0.9,'Total',/normal
-     xyouts, 0.8,0.85,'Old stars',/normal,color=cgcolor('red')
-     xyouts, 0.8,0.75,'New Stars',/normal,color=cgcolor('cyan')
-     xyouts, 0.8,0.7,'Gas',/normal,color=cgcolor('purple')
+       plot, lambda,spec_tau[*,0],/xs,xr=[3000,9000],title='Orien 0: Snapshot '+str_snap+' with dust'+' N*='+string(nstars,form='(I0)')+' (cell region)'
+       oplot, lambda,spec_os_dust[*,0],color=cgcolor('red')
+       oplot, lambda,spec_ns_dust[*,0],color=cgcolor('cyan')
+       oplot, lambda,spec_g_dust[*,0],color=cgcolor('purple')
+       print, 'gas_max',max(spec_g_dust[*,0])
+       print, 'newstar_max',max(spec_ns_dust[*,0])
+       ;print, spec_ns_dust[*,0]
+       xyouts, 0.8,0.9,'Total',/normal
+       xyouts, 0.8,0.85,'Old stars',/normal,color=cgcolor('red')
+       xyouts, 0.8,0.75,'New Stars',/normal,color=cgcolor('cyan')
+       xyouts, 0.8,0.7,'Gas',/normal,color=cgcolor('purple')
 
-     plot, lambda, -alog(spec_tau[*,0]/spec_notau[*,0]),/xs,xr=[3000,9000],ytitle=textoidl('\tau_\lambda')
-     oplot, [5500,5500],[0,5],linestyle=2
-     oplot, lambda, -alog(spec_g_dust[*,0]/spec_g[*,0]),color=cgcolor('purple')
-     oplot, lambda, -alog(spec_ns_dust[*,0]/spec_ns[*,0]),color=cgcolor('cyan')
-     oplot, lambda, -alog(spec_os_dust[*,0]/spec_os[*,0]),color=cgcolor('red')
+       plot, lambda, -alog(spec_tau[*,0]/spec_notau[*,0]),/xs,xr=[3000,9000],ytitle=textoidl('\tau_\lambda')
+       oplot, [5500,5500],[0,5],linestyle=2
+       oplot, lambda, -alog(spec_g_dust[*,0]/spec_g[*,0]),color=cgcolor('purple')
+       oplot, lambda, -alog(spec_ns_dust[*,0]/spec_ns[*,0]),color=cgcolor('cyan')
+       oplot, lambda, -alog(spec_os_dust[*,0]/spec_os[*,0]),color=cgcolor('red')
+     endif
 
 
   endfor

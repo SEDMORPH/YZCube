@@ -1,5 +1,6 @@
 sdssimages/
 sedm2_directories.inc*
+sedm_mocksdssimage_movie.pro
 nohup.out
 *~
 command.sh

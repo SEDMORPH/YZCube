@@ -7,7 +7,7 @@
 ;;*
 ;;******************************************************************
 
-PRO SEDM2_PCA, dir_in, dir_out, tauv, mu_d, dir_pca_data,one_comp_dust=one_comp_dust, style=style
+PRO SEDM2_PCA, dir_in, dir_out, tauv, mu_d, dir_pca_data,one_comp_dust=one_comp_dust, style=style, with_metal=with_metal
 
   @sedm2_codeunits.inc
   ; @sedm2_directories.inc
@@ -31,9 +31,16 @@ PRO SEDM2_PCA, dir_in, dir_out, tauv, mu_d, dir_pca_data,one_comp_dust=one_comp_
     outfile = dir_out+'pcs'+outstr+'.fits'
     psfile = dir_out+'pcs'+outstr+'.ps'
   endif else begin
-    filename = file_search(dir_out+'spec'+outstr+'_???'+'_'+style+'.fits',count=nsnap)
-    outfile = dir_out+'pcs'+outstr+'_'+style+'.fits'
-    psfile = dir_out+'pcs'+outstr+'_'+style+'.ps'
+    if KEYWORD_SET(with_metal) then begin
+	print, "with_metal"
+	filename = file_search(dir_out+'spec'+outstr+'_???'+'_'+style+'_with_metal.fits',count=nsnap)
+	outfile = dir_out+'pcs'+outstr+'_'+style+'_with_metal.fits'
+	psfile = dir_out+'pcs'+outstr+'_'+style+'_with_metal.ps'
+    endif else begin
+	filename = file_search(dir_out+'spec'+outstr+'_???'+'_'+style+'.fits',count=nsnap)
+	outfile = dir_out+'pcs'+outstr+'_'+style+'.fits'
+	psfile = dir_out+'pcs'+outstr+'_'+style+'.ps'
+    endelse
   endelse
 
 ;;-- SFR for EQW Halpha

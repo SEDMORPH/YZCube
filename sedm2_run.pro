@@ -67,7 +67,8 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
     centerslist=centerslist, spec_star_age=spec_star_age, with_metal=with_metal, $
     cell_spectra=cell_spectra, cell_x_offset=cell_x_offset, cell_y_offset=cell_y_offset, $
     cell_size=cell_size, cir_fib=cir_fib, fib_radius=fib_radius, arcsec=arcsec, $
-    spec_style=spec_style, rtfaceon=rtfaceon, one_comp_dust=one_comp_dust, with_PSF=with_PSF
+    spec_style=spec_style, rtfaceon=rtfaceon, one_comp_dust=one_comp_dust, with_PSF=with_PSF, $
+    plot_cell_spec=plot_cell_spec, sedm_mocksdssimage_movie=sedm_mocksdssimage_movie
 
   if n_elements(fileseq) eq 0 then begin
      print, 'please provide input file sequence'
@@ -159,7 +160,8 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
  if keyword_Set(cell_spectra) then SEDM2_cell_spec, dir_in, dir_out,tauv,mu_d,redshift,  cell_x_offset, cell_y_offset,$
     					                            cell_size=cell_size, cir_fib=cir_fib, fib_radius=fib_radius, arcsec=arcsec, $
                                           snap = snapID, style = spec_style, rtfaceon=rtfaceon, model_str=model_str, models_dir=dir_models,$
-                                          one_comp_dust=one_comp_dust, with_metal=with_metal, with_PSF=with_PSF, dir_PSF_weight=dir_PSF_weight
+                                          one_comp_dust=one_comp_dust, with_metal=with_metal, with_PSF=with_PSF, dir_PSF_weight=dir_PSF_weight,$
+                                          plot_cell_spec=plot_cell_spec
 
 ;;------------------------------------------------------------------
 ;; Create spectral indices
@@ -170,7 +172,7 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
 ;; Create spectral indices
 ;;------------------------------------------------------------------
 
-  if keyword_Set(pca) then SEDM2_pca, dir_in, dir_out, tauv, mu_d, dir_pca_data, one_comp_dust=one_comp_dust, style=spec_style; snap = snapID
+  if keyword_Set(pca) then SEDM2_pca, dir_in, dir_out, tauv, mu_d, dir_pca_data, one_comp_dust=one_comp_dust, style=spec_style, with_metal=with_metal;# snap = snapID
 
 
 
@@ -180,6 +182,7 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
 
   ;;-- SFR movie
   if keyword_set(sfrmovie) then SEDM2_sfrmovie, dir_in, dir_out
+  if keyword_set(sedm_mocksdssimage_movie) then SEDM_MOCKSDSSIMAGE_MOVIE, dir_in, dir_out, redshift, tauv, mu_d,hubparam=hubparam,noimage=noimage,imagesize=imagesize,ashapefile=ashapefile
 
   ;;-- SDSS image movie
   if keyword_set(sdssmovie) then begin
