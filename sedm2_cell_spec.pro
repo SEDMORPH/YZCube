@@ -191,7 +191,7 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
 
   nsnap = n_elements(filename)
 
-  print, 'SEDM2_SDSSIMAGE: number of snapshots to process',nsnap
+  print, 'SEDM2_CELL_SPEC: number of snapshots to process',nsnap
 
 ;;------------------------------------------------------------------
 ;; Pre-computations
@@ -214,6 +214,7 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
     ssps = 0
 
     ; read in the SSPs for the resest metallicity value, record the Luminosity only
+    ; 0 has been read above
     for mm=1, N_z-1 do begin
       ssps = SEDM2_GETSSPS(dir_models, model_str,Z_keys[mm])
       ssps_lum_metal[*,*,mm] = ssps.seds;[ind,*]
@@ -256,7 +257,7 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
      filename_short = (strsplit(tmp,'.',/extract))[0]
      str_snap = (strsplit(filename_short,'_',/extract))[1] ;don't use i as could be only doing a single snapshot
 
-     print, 'SEDM2_SPEC building spectrum for snapshot:'+str_snap
+     print, 'SEDM2_CELL_SPEC building spectrum for snapshot:'+str_snap
  ;;-- make a directory for each data cube.
      if KEYWORD_SET(cir_fib) then begin
        data_cube_dir = "DataCube"+outstr+'_'+str_snap+string(file_style)+'_cir_radius_'+string(fib_radius, form='(F0.2)' )
