@@ -34,10 +34,10 @@ Notes:
 	I then used "ssh -X" to log onto vela with linux machines, everything goes fine.
 
 
-How to run the code
+How to run the code, more details in create_datacube.sh
 1. get fiber location
 2. get PSF weight
-3.
-4. create RSS(cell spectra) with circluar mock fibers or sqaure one. An example could be
+3. create RSS(cell spectra) with circluar mock fibers or sqaure one. An example could be
 > idl -e "sedm2_run, '2xSc_07_EC_BH_vw1e4_ReposNoRFBNoRP',snap=151, cell_x_offset=2.97,cell_y_offset=4.12,/cell_spectra, fib_radius=0.79, tauv=1.0, spec_style='star_age',/with_metal,/with_PSF,/cir_fib"
 This example specify the fileseq, snapshot ID, center of fiber, radius of the fiber, tauv, create star_age style spectrum, considering metallicity and PSF effect, using circular fiber
+4. make datacube from RSS
