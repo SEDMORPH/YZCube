@@ -116,7 +116,7 @@ PRO get_center_ind, particle, cen_part_ind,mass_weight, $
     temp = min( abs(wave_eff - 4000.0*(1+redshift)), band_id )
     band_name = band_list[band_id] 
     print, "redshift: ", redshift, "      band_name: ", band_name
-    filename = dir_PSF_weight+band_name+"_band_PSF_mass_weight_res_"+string(bin_size, form='(F0.2)')+'kpc.fits'
+    filename = dir_PSF_weight+band_name+"_band_PSF_mass_weight_res_"+string(bin_size, form='(F0.2)')+"kpc_at_z"+string(redshift,form='(F0.3)')+".fits"
     data = mrdfits(filename, 1, hdr)
     arr_weight_bin = data.PSF_weight;read in the weight at different radius
     bin_idx = round(rlist/bin_size)
