@@ -14,16 +14,21 @@ with_metal=1
 cir_fib=1
 with_PSF=1
 real_fibpos=1
+
+# as some python scripts are in dependencies
+cd some_dependencies
 # step 1. get fiber location
-python some_dependencies/fiber_locations.py $redshift
+python fiber_locations.py $redshift
 # step 2. get PSF weight
-python some_dependencies/PSF_mass_weight.py $redshift
+python PSF_mass_weight.py $redshift
+
+cd ..
 # step 3. create RSS(cell spectra) with circluar mock fibers or sqaure one. An example could be
 # create RSS data for all 3 dithering set
 for ds in $(seq 0 2)
 do
     echo "creating RSS for dithering set: $ds"
-    # ./create_RSS.sh $fileseq $snapID fib_radius=0.79 spec_style=$spec_style rtfaceon=$rtfaceon tauv=$tauv one_comp_dust=$one_comp_dust with_metal=$with_metal cir_fib=$cir_fib with_PSF=$with_PSF real_fibpos=$real_fibpos dither_set=$ds
+    ./create_RSS.sh $fileseq $snapID fib_radius=0.79 spec_style=$spec_style rtfaceon=$rtfaceon tauv=$tauv one_comp_dust=$one_comp_dust with_metal=$with_metal cir_fib=$cir_fib with_PSF=$with_PSF real_fibpos=$real_fibpos dither_set=$ds
 done
 
 
