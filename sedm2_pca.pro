@@ -138,7 +138,6 @@ PRO SEDM2_PCA, dir_in, dir_out, tauv, mu_d, dir_pca_data,one_comp_dust=one_comp_
   yy = findgen((size(hist,/dim))[1])*dbiny+miny + dbiny/2.
   cgloadct,0,/reverse
   cgcontour, loghist,xx,yy,nlevels=20,/fill,missingvalue=-999.,xtitle='PC1',ytitle='PC2',xr=[-7,2],/xs,yr=[-3,2],/ys
-  save, xx, yy, loghist, file='DR7_loghist.sav'
 
   oplot, pcs_notau[0,*],-pcs_notau[1,*],psym=-1
   loadct, 13,ncolors=nsnap

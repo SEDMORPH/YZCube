@@ -39,7 +39,6 @@ FUNCTION bc03_projectbc03, specstr, nrecon, runno, dir_pca_data,$ ;inputs
                            norm=norm,vdisp=vdisp,flxarr=flxarr,$ ; optional outputs
                            chi2=chi2,wave_espec=wave_espec, wave_extend = wave_extend ;optional outputs
 
-@bc03dir.inc
 @voinfo.inc
 
 if NOT(TAG_EXIST(specstr,'data_disp')) then begin

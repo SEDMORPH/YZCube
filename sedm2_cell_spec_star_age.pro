@@ -119,9 +119,10 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
 ;                We do not suggest use arcsec!!! As we want keep the spectra in rest-frame
 ; rtfaceon     : rotate to faceon, if switched on, rotate the disk to be a face on one.
 ; style        : the spectra style, choose from the following choices
-;                  "" (empty string) --> SEDmorph method
-;                  "star_age" --> star_age method
+;                  "" (empty string) --> SEDmorph method--> turn out to be useless, removed 
+;                  "star_age" --> star_age method, --> the methods descriped in Y.Zheng+2020
 ;                   also support _eagle and _eagle_minus, but these are not well tested yet.(20-Aug-2018)
+;                    _eagle and _eagle_minus --> turn out to be useless, removed
 ; one_comp_dust: use tau_old for all stars, i.e. tau_young = tau_old
 ;_
 
@@ -141,11 +142,12 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
   ;check the parameters, stop the program if the right size parameter is not set
   temp=check_size(cell_size=cell_size, fib_radius=fib_radius, cir_fib=cir_fib)
 
-  if NOT KEYWORD_SET(style) then style='' ;;SEDMoprh style by default
-  ;; use add an underscore for non-SEDmorph style, so that we use file_style for the input and output files
-  if (strlowcase(style) eq "sedmorph") || (style eq '') then begin
-    style=''
-    file_style=''
+  if (strlowcase(style) ne "star_age")  then begin
+      print, "During the devolpment of the code, we also include spectrum styles like" 
+      print, "sedmorph, eagle, eagle_minus. They turn out to be unnecessary so removed." 
+      print, "This public version only include the star_age method." 
+      print, "The star_age method is the one described in Y.Zheng+2020." 
+      stop
   endif else file_style='_'+style
 ;;-- set the output file name
   outstr = '_tauv'+string(tauv,form='(F0.1)')
@@ -166,6 +168,13 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
     cell_str = cell_str+'_size_'+string(cell_size, form='(F0.2)' )
   endelse
 
+
+  if KEYWORD_SET(with_metal) then begin
+    if style ne 'star_age' then begin
+      print, "Meatllicity is only work for star_age method currently! --- 12-Mar-19"
+      stop
+    endif
+  endif
 
 
 
@@ -196,7 +205,7 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
 ;;------------------------------------------------------------------
 ;; Pre-computations
 ;;------------------------------------------------------------------
-;;-- read SSPs !!!! NEED TO ADD DIFFERENT METALLICITIES
+;;-- read SSPs 
   if KEYWORD_SET(with_metal) then begin
     if style ne 'star_age' then begin
       print, "Meatllicity is only work for star_age method currently! --- 12-Mar-19"
@@ -278,6 +287,9 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
      if KEYWORD_SET(plot_cell_spec) then print, psfile
      ; wait, 10
 ;;-- output arrays for each component of the final image
+;;   NOTE: for star_age method, all stars are treated as old stars
+;;   In other spectrum styles, there are 3 components, gas, new stars formed during the simulation
+;;   and old stars that are already in place prior to start of simulation
      spec_g_old = (spec_g_young = (spec_ns_old = (spec_ns_young = (spec_os_old = (spec_os_young = fltarr(nlambda))))))
 
 ;;-- read simulation files  - 9 secs
@@ -334,164 +346,100 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
       center[1] += cell_y_offset
       print, 'oldstars_minid', oldstars_minid
 
-      ; print,"cell_size", cell_size
-      ;print, stars[0]
-      ind_newstars = where(stars.id lt oldstars_minid, nnewstars,compl=ind_oldstars)
-      newstars = stars[ind_newstars]
-      print, "Check newstars:"
-      get_center_ind, newstars, cen_part_ind, mass_weight, center=center, cell_size=cell_size,fib_radius=fib_radius, cir_fib=cir_fib, with_PSF=with_PSF, redshift=redshift, dir_PSF_weight=dir_PSF_weight
-      newstar_cen_ind = cen_part_ind
-      newstar_mass_weight = mass_weight
-      newstars.mass = newstars.mass * mass_weight
-      newstars = newstars[newstar_cen_ind]
       print, "Check stars:"
       get_center_ind, stars, cen_part_ind, mass_weight, center=center, cell_size=cell_size,fib_radius=fib_radius, cir_fib=cir_fib, with_PSF=with_PSF, redshift=redshift, dir_PSF_weight=dir_PSF_weight
       ;print, cen_part_ind
       stars.mass = stars.mass * mass_weight
       stars = stars[cen_part_ind]
-      print, "Check gas:"
-      get_center_ind, gas, cen_part_ind, mass_weight, center=center, cell_size=cell_size,fib_radius=fib_radius, cir_fib=cir_fib, with_PSF=with_PSF, redshift=redshift, dir_PSF_weight=dir_PSF_weight
-      gas_mass_weight = mass_weight
-      gas.mass = gas.mass * mass_weight
-      gas_cen_ind = cen_part_ind
-      gas = gas[gas_cen_ind]
-      ; print, n_elements(gas)
 
 
 
-      if size(stars,/type) eq 8 then nstars = n_elements(stars) else nstars=0
-      if size(gas,/type)   eq 8 then ngas   = n_elements(gas)   else ngas=0
-
-     ind_newstars = where(stars.id lt oldstars_minid, nnewstars)
      ind_oldstars = where(stars.id ge oldstars_minID,compl=ind_newstars, noldstars) ;ID the old stars
      if ind_newstars[0] ne -1 then nnewstars = n_elements(ind_newstars) else nnewstars = 0
-     if nnewstars+noldstars ne nstars then stop
-     print, 'starnum', nnewstars, noldstars, nstars
-     print, 'gasnum', ngas
 
 ;;-- fill up ind_ssp star structures
      if i eq 0 then plot=1 else plot=0
      if not KEYWORD_SET(plot_cell_spec) then plot=0
      if noldstars gt 0 then SEDM2_BUILDSED, age_ssp, stars, oldstars_minid, sfr, snap_time,plot=plot
 
- ;;-- read gas particle and new star particle SFHs for this snapshot - 0.5 secs
-     if style ne "star_age" then begin
-    	 savefile = dir_in+filename_short+'_gassfh'+file_style+'.sav'
-	     restore, savefile
-    	 gassfh=gassfh[gas_cen_ind,*]
-    	 newstarsfh=newstarsfh[newstar_cen_ind, *]
-     endif
 
+    ;;-- old stars
+    if noldstars gt 0 then begin
 
-;;-- loop over SSPs to build integrated spectra
-     for j=0,nssps-1 do begin
+      oldstars = stars[ind_oldstars]
+      if KEYWORD_SET(with_metal) then begin
 
-       ; for star_age method, treat all stars as old stars, so oldstars_minid was set to be -1
-       ;therefore, we need only calculate "old stars" for star_age method
-       if style ne "star_age" then begin
-          ;;-- gas
-          if ngas gt 0 then begin
-             if age_ssp[j] le 0.01 then spec_g_young = spec_g_young+total(gassfh[*,j])*ssps_lum[*,j] $
-             else spec_g_old = spec_g_old+total(gassfh[*,j])*ssps_lum[*,j]
+        print, "Using metal"
+        ostars_metal_bin = uintarr(noldstars)
+        sedm2_z_ind, oldstars.metal, Z_models.values, Z_ind
+        ostars_metal_bin = Z_ind
+
+        accum_nostars_metal = 0 ;accumulative count of oldstars
+        print, "Z_keys   number of the oldstars in this bins"
+        for mm=0, N_z-1 do begin
+          ind_metal = where(ostars_metal_bin eq mm, mcount)
+          if mcount gt 0 then begin
+	      print, Z_keys[mm], mcount
+              accum_nostars_metal += mcount
+
+              mm_oldstars = oldstars[ind_metal]
+              for j=0,nssps-1 do begin ; loop over ssp
+                ind = where(mm_oldstars.ind_ssp eq j,nn2)
+                ; print, nn2
+                if ind[0] ne -1 then begin
+                   if age_ssp[j] le 0.01 then spec_os_young = spec_os_young+total(mm_oldstars[ind].mass)*ssps_lum_metal[*,j,mm] $
+                   else spec_os_old = spec_os_old+total(mm_oldstars[ind].mass)*ssps_lum_metal[*,j,mm]
+                endif ; have particle in the ssp
+              endfor ; loop over ssp
+          endif ; have particles in the meatllicity bin
+
+        endfor ; for loop of metallicity
+        ;check that all oldstars have been counted
+        if accum_nostars_metal ne noldstars then  begin
+          print, "Not all oldstars are counted for the spectra, stop here"
+          stop
+        endif else begin
+          print, "noldstars          total star number in all metallicity bins"
+          print, noldstars, accum_nostars_metal
+          print, "All oldstars have been counted."
+        endelse
+
+      endif else begin ; loop over meatllicity bins
+
+        print, "Uni_metal"
+        for j=0,nssps-1 do begin
+
+          ; if noldstars gt 0 then begin
+          ind = where(oldstars.ind_ssp eq j,nn2)
+          if ind[0] ne -1 then begin
+            if age_ssp[j] le 0.01 then spec_os_young = spec_os_young+total(oldstars[ind].mass)*ssps_lum[*,j] $
+            else spec_os_old = spec_os_old+total(oldstars[ind].mass)*ssps_lum[*,j]
           endif
+          ; endif
+        endfor
+      endelse ; use meatllicity
 
-          ;;-- new stars
-          if nnewstars gt 0 then begin
-             if age_ssp[j] le 0.01 then spec_ns_young = spec_ns_young+total(newstarsfh[*,j])*ssps_lum[*,j] $
-             else spec_ns_old = spec_ns_old+total(newstarsfh[*,j])*ssps_lum[*,j]
-          endif
-        endif ;;style
-
-        ;;-- old stars
-        if noldstars gt 0 then begin
-
-          oldstars = stars[ind_oldstars]
-          if KEYWORD_SET(with_metal) then begin
-
-            if style ne 'star_age' then begin
-              print, "Meatllicity is only work for star_age method currently! --- 12-Mar-19"
-              stop
-            endif
-            print, "Using metal"
-            ostars_metal_bin = uintarr(noldstars)
-            sedm2_z_ind, oldstars.metal, Z_models.values, Z_ind
-            ostars_metal_bin = Z_ind
-
-            accum_nostars_metal = 0 ;accumulative count of oldstars
-            print, "Z_keys   number of the oldstars in this bins"
-            for mm=0, N_z-1 do begin
-              ind_metal = where(ostars_metal_bin eq mm, mcount)
-              if mcount gt 0 then begin
-                  print, Z_keys[mm], mcount
-                  accum_nostars_metal += mcount
-
-                  mm_oldstars = oldstars[ind_metal]
-                  for j=0,nssps-1 do begin
-                    ind = where(mm_oldstars.ind_ssp eq j,nn2)
-                    ; print, nn2
-                    if ind[0] ne -1 then begin
-                       if age_ssp[j] le 0.01 then spec_os_young = spec_os_young+total(mm_oldstars[ind].mass)*ssps_lum_metal[*,j,mm] $
-                       else spec_os_old = spec_os_old+total(mm_oldstars[ind].mass)*ssps_lum_metal[*,j,mm]
-                    endif ; have particle in the ssp
-                  endfor
-
-              endif ; have particles in the meatllicity bin
-
-            endfor ; for loop of metallicity
-            ;check that all oldstars have been counted
-            if accum_nostars_metal ne noldstars then  begin
-              print, "Not all oldstars are counted for the spectra, stop here"
-              stop
-            endif else begin
-              print, "noldstars          total star number in all metallicity bins"
-              print, noldstars, accum_nostars_metal
-              print, "All oldstars have been counted."
-            endelse
-
-          endif else begin ; loop over meatllicity bins
-
-            print, "Uni_metal"
-            for j=0,nssps-1 do begin
-
-              ; if noldstars gt 0 then begin
-              ind = where(oldstars.ind_ssp eq j,nn2)
-              if ind[0] ne -1 then begin
-                if age_ssp[j] le 0.01 then spec_os_young = spec_os_young+total(oldstars[ind].mass)*ssps_lum[*,j] $
-                else spec_os_old = spec_os_old+total(oldstars[ind].mass)*ssps_lum[*,j]
-              endif
-              ; endif
-            endfor
-          endelse ; use meatllicity
-
-
-
-        ;    ind = where(stars[ind_oldstars].ind_ssp eq j,nn2)
-        ;    if ind[0] ne -1 then begin
-        ;       if age_ssp[j] le 0.01 then spec_os_young = spec_os_young+total(stars[ind_oldstars[ind]].mass)*ssps_lum[*,j] $
-        ;       else spec_os_old = spec_os_old+total(stars[ind_oldstars[ind]].mass)*ssps_lum[*,j]
-        ;    endif
-        endif
-
-
-     endfor
+    endif ; if there are old stars
 
 
 ;;-- sum components and add dust
-     spec_ns = spec_ns_young+spec_ns_old
-     spec_ns_dust = spec_ns_young*exp(-tau_young)+spec_ns_old*exp(-tau_old)
-     spec_g = spec_g_young+spec_g_old
-     spec_g_dust = spec_g_young*exp(-tau_young)+spec_g_old*exp(-tau_old)
+;;-- here we treat all stars as old stars
+     ; spec_ns = spec_ns_young+spec_ns_old
+     ; spec_ns_dust = spec_ns_young*exp(-tau_young)+spec_ns_old*exp(-tau_old)
+     ; spec_g = spec_g_young+spec_g_old
+     ; spec_g_dust = spec_g_young*exp(-tau_young)+spec_g_old*exp(-tau_old)
      spec_os = spec_os_young+spec_os_old
      spec_os_dust = spec_os_young*exp(-tau_young)+spec_os_old*exp(-tau_old)
 
-     spec_notau = spec_ns+spec_g+spec_os
-     spec_tau = spec_ns_dust+spec_g_dust+spec_os_dust
+     spec_notau = spec_os
+     spec_tau = spec_os_dust
 
 ;;-- PCA components
 
 
 ;;-- save output file
-     struc = {wave:lambda, spec_tau:spec_tau,spec_notau:spec_notau,spec_stars:spec_ns, spec_ns_dust:spec_ns_dust, spec_bulge:spec_os, spec_os_dust:spec_os_dust, spec_gas:spec_g, spec_g_dust:spec_g_dust}
+     ; struc = {wave:lambda, spec_tau:spec_tau,spec_notau:spec_notau,spec_stars:spec_ns, spec_ns_dust:spec_ns_dust, spec_bulge:spec_os, spec_os_dust:spec_os_dust, spec_gas:spec_g, spec_g_dust:spec_g_dust}
+     struc = {wave:lambda, spec_tau:spec_tau,spec_notau}
      mwrfits, struc, outfile_fits,/create
 
 
