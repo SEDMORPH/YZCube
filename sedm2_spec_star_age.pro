@@ -140,7 +140,7 @@ endelse
 
 ;;-- fill up ind_ssp star structures
      if i eq 0 then plot=1 else plot=0
-     if noldstars gt 0 then SEDM2_BUILDSED, age_ssp, stars, oldstars_minid, sfr, snap_time,plot=plot
+     if noldstars gt 0 then SEDM2_BUILDSED, age_ssp, stars, oldstars_minid, snap_time,sfr=sfr, plot=plot
 
 ;;-- read gas particle and new star particle SFHs for this snapshot - 0.5 secs
      ; restore,  dir_in+'gassfh_uniform_Z_5_March/'+filename_short+'_gassfh.sav'

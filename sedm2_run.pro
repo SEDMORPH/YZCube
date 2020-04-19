@@ -34,6 +34,7 @@
 ;                    arcsec: if this keyword is set, the parameters above are in arcsec.
 ;                            Otherwise they are in kpc. Use kpc by default
 ;                    with_PSF: if set, include the PSF effect when creating cell spectra
+;	with_metal: if set, include the metallicity effect when creating spectra/cell spectra
 ;       one_comp_dust: use 1-component dust instead of the default 2-component mag_AB_dust
 ;                      adopt tau_old for all stars, i.e. tau_young = tau_old
 ;
@@ -61,14 +62,12 @@
 ;-
 
 
-PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu_d, $
-    sdssimage=sdssimage,imagesize=imagesize, faceon=faceon, sfrmovie=sfrmovie, sdssmovie=sdssmovie, $
-    hyperion=hyperion, gassfh = gassfh,  movieorientation=movieorientation,spectra=spectra,pca=pca, $
-    centerslist=centerslist, spec_star_age=spec_star_age, with_metal=with_metal, $
+PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu_d, have_BH=have_BH, $
+    faceon=faceon,  pca=pca,  centerslist=centerslist, spec_star_age=spec_star_age, with_metal=with_metal, $
     cell_spectra=cell_spectra, cell_x_offset=cell_x_offset, cell_y_offset=cell_y_offset, $
     cell_size=cell_size, cir_fib=cir_fib, fib_radius=fib_radius, arcsec=arcsec, $
     spec_style=spec_style, rtfaceon=rtfaceon, one_comp_dust=one_comp_dust, with_PSF=with_PSF, $
-    plot_cell_spec=plot_cell_spec, sedm_mocksdssimage_movie=sedm_mocksdssimage_movie
+    plot_cell_spec=plot_cell_spec
 
   if n_elements(fileseq) eq 0 then begin
      print, 'please provide input file sequence'
@@ -109,7 +108,7 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
 ;;------------------------------------------------------------------
 ;; Calculate centers of the two halo for all snapshots
 ;;------------------------------------------------------------------
-  if KEYWORD_SET(centerslist) then SEDM2_centerslist, fileseq, indir=dir_in, outdir=dir_in
+  if KEYWORD_SET(centerslist) then SEDM2_centerslist, fileseq, indir=dir_in, outdir=dir_in, have_BH=have_BH
 
 ;;------------------------------------------------------------------
 ;; Create total optical spectra

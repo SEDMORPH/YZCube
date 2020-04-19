@@ -186,7 +186,7 @@ PRO SEDM2_CELL_SPEC_STAR_AGE, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset
 
   if n_elements(snap_in) gt 0 then begin
 
-     SEDM2_READSNAP, filename[0], stars=stars, /getstars ;need to get minID of old stars from first file
+     SEDM2_READSNAP, filename[0], stars=stars, /getstars, /no_sfr_log ;need to get minID of old stars from first file
      oldstars_minid = min(stars.id) ;minimum ID number of old stars. New stars will have ID < this value.
      ; for star_age method, treat all stars as old stars, so oldstars_minid should be set to -1
      if style eq 'star_age' then oldstars_minid=-1
@@ -293,7 +293,8 @@ PRO SEDM2_CELL_SPEC_STAR_AGE, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset
      spec_g_old = (spec_g_young = (spec_ns_old = (spec_ns_young = (spec_os_old = (spec_os_young = fltarr(nlambda))))))
 
 ;;-- read simulation files  - 9 secs
-     SEDM2_READSNAP, filename[i], stars=stars, gas=gas, sfr=sfr, snap_time=snap_time,/getstars,/getgas
+     ; use no_sfr_log, unless you want to plot the SFR log file
+     SEDM2_READSNAP, filename[i], stars=stars, snap_time=snap_time,/getstars,/no_sfr_log
 
 
      if n_elements(oldstars_minid) eq 0 and i eq 0 then oldstars_minid = min(stars.id) ;minimum ID number of old stars. New stars will have ID < this value.
@@ -360,7 +361,7 @@ PRO SEDM2_CELL_SPEC_STAR_AGE, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset
 ;;-- fill up ind_ssp star structures
      if i eq 0 then plot=1 else plot=0
      if not KEYWORD_SET(plot_cell_spec) then plot=0
-     if noldstars gt 0 then SEDM2_BUILDSED, age_ssp, stars, oldstars_minid, sfr, snap_time,plot=plot
+     if noldstars gt 0 then SEDM2_BUILDSED, age_ssp, stars, oldstars_minid, snap_time,plot=plot
 
 
     ;;-- old stars
@@ -439,7 +440,7 @@ PRO SEDM2_CELL_SPEC_STAR_AGE, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset
 
 ;;-- save output file
      ; struc = {wave:lambda, spec_tau:spec_tau,spec_notau:spec_notau,spec_stars:spec_ns, spec_ns_dust:spec_ns_dust, spec_bulge:spec_os, spec_os_dust:spec_os_dust, spec_gas:spec_g, spec_g_dust:spec_g_dust}
-     struc = {wave:lambda, spec_tau:spec_tau,spec_notau}
+     struc = {wave:lambda, spec_tau:spec_tau,spec_notau:spec_notau}
      mwrfits, struc, outfile_fits,/create
 
 

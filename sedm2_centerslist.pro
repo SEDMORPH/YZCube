@@ -42,7 +42,7 @@
 
 
 
-PRO SEDM2_CENTERSLIST, fileseq, indir=indir, outdir=outdir
+PRO SEDM2_CENTERSLIST, fileseq, indir=indir, outdir=outdir, have_BH=have_BH
 
 
   if not (keyword_set(indir))  then cd, current=indir
@@ -62,15 +62,30 @@ PRO SEDM2_CENTERSLIST, fileseq, indir=indir, outdir=outdir
   cen_list = fltarr(6, Nsnap)
 
   for i=0,Nsnap-1 do begin
-  ;for i=0,2 do begin
 
 
-     ;;----We only need halo for finding centers
-     SEDM2_READSNAP, indir+filename[i], halo=halo,/gethalo
+     if KEYWORD_SET(have_BH) then begin
+	 SEDM2_READSNAP, indir+filename[i], BHs=BHs,/getBH, /no_sfr_log
+	 nBH = n_elements(BHs.id)
+	 if nBH eq 2 then begin ; BH not mergered yet
+	     min_BHid = min(BHs.id)
+	     min_idx = where(BHs.id eq min_BHid)
+	     min_idx = min_idx[0]
+	     max_BHid = max(BHs.id)
+	     max_idx = where(BHs.id eq max_BHid)
+	     max_idx = max_idx[0]
+	     cen_list[*,i]= [ BHs[min_idx].x, BHs[min_idx].y, BHs[min_idx].z, BHs[max_idx].x, BHs[max_idx].y, BHs[max_idx].z]
+	 endif
+	 if nBH eq 1 then begin ;BH mergered
+	     cen_list[*,i]= [ BHs[0].x, BHs[0].y, BHs[0].z, BHs[0].x, BHs[0].y, BHs[0].z ]
+	 endif
+     endif else begin
+	 ;;----We only need halo for finding centers
+	 SEDM2_READSNAP, indir+filename[i], halo=halo,/gethalo, /no_sfr_log
+	 separation=SEDM2_FIND_CENTERS_MERGER(halo=halo, fileseq=fileseq)
 
-     separation=SEDM2_FIND_CENTERS_MERGER(halo=halo, fileseq=fileseq)
-
-     cen_list[*, i] = separation[0:5]
+	 cen_list[*, i] = separation[0:5]
+     endelse
 
 
   endfor

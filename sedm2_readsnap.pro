@@ -48,7 +48,7 @@
 ;-
 
 
-PRO SEDM2_READSNAP, filename,  stars=stars, gas=gas, halo=halo, sfr=sfr, snap_time=snap_time,getstars=getstars, getgas=getgas,gethalo=gethalo
+PRO SEDM2_READSNAP, filename,  stars=stars, gas=gas, halo=halo, BHs=BHs, sfr=sfr, snap_time=snap_time,getstars=getstars, getgas=getgas,gethalo=gethalo, getBH=getBH, no_sfr_log=no_sfr_log
 
 ;;-- check files exist
   if file_test(filename) eq 0 then message, 'Snapshot file not found'+ filename
@@ -74,6 +74,7 @@ PRO SEDM2_READSNAP, filename,  stars=stars, gas=gas, halo=halo, sfr=sfr, snap_ti
   ngas = NumPart[0]
   nhalo = NumPart[1]
   nstars = NumPart[4]
+  nBH = NumPart[5]
 
   AttrID= H5A_OPEN_NAME(H5G_OPEN(file_id, '/Header'), 'Time')
   Snap_Time = H5A_READ(AttrID)*SimnUnitTime/hubparam
@@ -107,7 +108,7 @@ PRO SEDM2_READSNAP, filename,  stars=stars, gas=gas, halo=halo, sfr=sfr, snap_ti
 
 ;;-- gas particles
   if Ngas gt 0 and keyword_set(getgas) then begin
-     gas = replicate({x:0.0, y:0.0, z:0.0,vx:0.0, vy:0.0, vz:0.0,mass:0.0, sph_smooth:0.0,sfr:0.0, id:0L, rho:0.0, nh:0.0,metal:fltarr(12),ind_vel:0L, ind_Z:0},Ngas) ;ind_Z added for Metallicity, we have 7 models in current BC03
+     gas = replicate({x:0.0, y:0.0, z:0.0,vx:0.0, vy:0.0, vz:0.0,mass:0.0, sph_smooth:0.0,sfr:0.0, id:0L, rho:0.0, nh:0.0,metal:fltarr(12),ind_vel:0L, ind_Z:0},Ngas) ;ind_Z added for Metallicity
 
      GasCoordinates =  H5D_READ(H5D_OPEN(file_id, 'PartType0/Coordinates'))
      GasVelocity =  H5D_READ(H5D_OPEN(file_id, 'PartType0/Velocities'))
@@ -165,6 +166,30 @@ PRO SEDM2_READSNAP, filename,  stars=stars, gas=gas, halo=halo, sfr=sfr, snap_ti
 
   endif else stars = -1
 
+;;-- Black Hole particles
+  if nBH gt 0 and keyword_Set(getBH) then begin
+     BHs = replicate({x:0.0, y:0.0, z:0.0, vx:0.0, vy:0.0, vz:0.0, mass:0.0,id:0L,pot:0},nBH) 
+
+
+     BHCoordinates =  H5D_READ(H5D_OPEN(file_id, 'PartType5/Coordinates'))
+     BHVelocity =  H5D_READ(H5D_OPEN(file_id, 'PartType5/Velocities'))
+     BHIDs =  H5D_READ(H5D_OPEN(file_id, 'PartType5/ParticleIDs'))
+     BHMasses = H5D_READ(H5D_OPEN(file_id, 'PartType5/Masses'))
+     BHPot =  H5D_READ(H5D_OPEN(file_id, 'PartType5//Potential'))
+
+     BHs.x=reform(BHCoordinates[0,*])/hubparam
+     BHs.y=reform(BHCoordinates[1,*])/hubparam
+     BHs.z=reform(BHCoordinates[2,*])/hubparam
+
+     BHs.vx=reform(BHVelocity[0,*])
+     BHs.vy=reform(BHVelocity[1,*])
+     BHs.vz=reform(BHVelocity[2,*])
+
+     BHs.id = reform(BHIDs)
+     BHs.mass = MassUnit*BHMasses/hubparam
+     BHs.pot = BHPot ; Not sure about the unit
+
+  endif else BHs = -1
 ;;--
 
   H5F_CLOSE, file_id
@@ -174,12 +199,14 @@ PRO SEDM2_READSNAP, filename,  stars=stars, gas=gas, halo=halo, sfr=sfr, snap_ti
 ;; note that SFR_tot_Msun/yr is already in physical units
 ;; this is the sum over the SFR of the gas particles
 
-  readcol, SFR_logfile, sfr_time, SFR_tot_Msun_yr, form='(F,X,X,F,X)',/silent
-  sfr_time = sfr_time*SimnUnitTime/hubparam ;Gyr
+  if not keyword_set(no_sfr_log) then begin
+      readcol, SFR_logfile, sfr_time, SFR_tot_Msun_yr, form='(F,X,X,F,X)',/silent
+      sfr_time = sfr_time*SimnUnitTime/hubparam ;Gyr
 
 
-  sfr = fltarr(2,n_elements(sfr_time))
-  sfr[0,*] = sfr_time
-  sfr[1,*] = smooth(SFR_tot_Msun_yr,smooth_time) ;boxcar smooth, median doesn't work
+      sfr = fltarr(2,n_elements(sfr_time))
+      sfr[0,*] = sfr_time
+      sfr[1,*] = smooth(SFR_tot_Msun_yr,smooth_time) ;boxcar smooth, median doesn't work
+  endif
 
 END

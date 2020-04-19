@@ -15,6 +15,10 @@ cir_fib=1
 with_PSF=1
 real_fibpos=1
 
+
+# step 0, find the center of simulated galaxies
+idl -e "sedm2_run, '$fileseq', /centerslist, /have_BH"
+
 # as some python scripts are in dependencies
 cd some_dependencies
 # step 1. get fiber location
@@ -57,3 +61,8 @@ do
     fi
 done
 python make_datacube_from_RSS_fits.py $fileseq $snapID style="$spec_style"  tauv=$tauv faceon=$rtfaceon with_metal=$with_metal
+
+#other test
+
+idl -e "sedm2_run, '$fileseq', /spec_star_age, /with_metal"
+idl -e "sedm2_run, '$fileseq', style='star_age', /pca, /with_metal"

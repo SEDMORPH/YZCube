@@ -2,7 +2,7 @@
 ;;assign SSPs based on their formation time as set up by Natalia. This
 ;;involves filling the ind_ssp array in the structure "stars"
 
-PRO SEDM2_BUILDSED, age_ssp, stars, oldstars_minID, sfr, snap_time, plot=plot
+PRO SEDM2_BUILDSED, age_ssp, stars, oldstars_minID, sfr=sfr, snap_time, plot=plot
 
   Nssp = n_elements(age_ssp)
 
