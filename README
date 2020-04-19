@@ -1,37 +1,20 @@
 This is the README for the SEDM2 code
 =====================================
 
-VW 14 July 2016
+Yirui Zheng. April-2020
 
 The code is run from sedm2_run.pro
 Keywords need to be set for the code to do anything
-/GASSFH = compute and store the gas and new star SFHs. This needs to be done before anything else will run. Currently only VW can run this, as the files are stored with the gadget-3 output. 
-/CENTERSLIST = compute and store the centers of the two halos for all snapshots. This needs to be done before sdssimage, which use the centers to decide the image grids.
-/SDSSIMAGE = compute SDSS-style images. Default is 1'. Use keyword IMAGESIZE to change this
-/HYPERION = compute output files for hyperion
-More options will be added soon. 
 
-The Gadget-3 data is in /Users/vw8/data/SEDMORPH/SimnsGadget3/
-The output from the code is currently set to go to  /Users/vw8/data/SEDMORPH/SimnsGadget3_output/
+/CENTERSLIST = compute and store the centers of the two halos for all snapshots. This needs to be done before creating RSS, which use the centers to point the mock IFU. If mock galaxies contains black holes, use the BH position as the galaxy center. Ohterwise, use histogram to find the distribution of stars, and use the peak position as the galaxy center.
 
-ALL directories should now be set in the sedm2_directories.inc file. This can then be stored locally to avoid the swapping of directories everytime a new version is pulled from bitbucket!
+/spec_star_age = create total optical spectra for simulated galaxies withing the algorithm described in Y.Zheng+2020
 
-About branches:
-> master       : Working on circular fibers and PSF effect.
-		 Our PSF is not wavelength dependent. The PSF around the band that the 4000A break falls into is used at all other wavelength. For example, if the galaxy is at z=0.2, then the g-band PSF is used at all wavelength.
-> revise_tau   : allow 1-component dust, use tau_old for all particles
->BD_cell_spec  : Create cell spectra for bulge stars and Disk stars only.
-		 This will need one more file and modification on sedm2_run but 		 we just need this function temporaily. So I create this branch 		 for this special use.(yrzheng 20-Aug-2018)
->test_spec_ind : Try to make the PCA function work --> Finished and has been mergered into master branch. Do not work on this branch any more!
-> v3.0         : The star_age method can now work with metallicity; Create MaNGA cube with square fibers but without PSF effect.
-> v2.0         : Finish checking SFH.
-> v1.0.        : Can find centers of galaxies.
+/cell_spectra = create optical spectra for a region of simulated galaxies withing the algorithm described in Y.Zheng+2020. Necesary for mock datacube creation. (See below)
+
+/pca = run Principle Component Analysis. You can use it to indentify PSBs, see V.Wild+2007. Another version with more details can be found on https://github.com/SEDMORPH/VWPCA.
 
 
-Notes:
-> have a strange feature for sfrmovie and sdssmovie functions:
-	I tried "ssh -Y" to log onto vela with my mac and then got a problem when saving the gif files, it just save empty file.
-	I then used "ssh -X" to log onto vela with linux machines, everything goes fine.
 
 ### HOW TO CREATE A DATACUBE 
 
@@ -42,10 +25,12 @@ Notes:
 
 # STEPS
 How to run the code, see a worked example in create_datacube.sh
-you only need to run step 1&2 for once if you do not change the redshift
-1. get fiber location at the redshift
-2. get PSF weight at the redshift
-3. create RSS(cell spectra) with circluar mock fibers or sqaure one. An example could be
+You only need to run step 1 for once for one simulation 
+You only need to run step 2&3 for once if you do not change the redshift
+1. compute and store the centers of the two halos for all snapshots
+2. get fiber location at the redshift
+3. get PSF weight at the redshift
+4. create RSS(cell spectra) with circluar mock fibers or sqaure one. An example could be
 > idl -e "sedm2_run, '2xSc_07_EC_BH_vw1e4_ReposNoRFBNoRP',snap=151, cell_x_offset=2.97,cell_y_offset=4.12,/cell_spectra, fib_radius=0.79, tauv=1.0, spec_style='star_age',/with_metal,/with_PSF,/cir_fib"
 This example specify the fileseq, snapshot ID, center of fiber, radius of the fiber, tauv, create star_age style spectrum, considering metallicity and PSF effect, using circular fiber
-4. make datacube from RSS
+5. make datacube from RSS
