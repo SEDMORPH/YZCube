@@ -98,7 +98,7 @@ END
 
 
 
-PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_offset,$
+PRO SEDM2_CELL_SPEC_STAR_AGE, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_offset,$
     		cell_size=cell_size, cir_fib=cir_fib, fib_radius=fib_radius, arcsec=arcsec, $
                 snap=snap_in, style=style, model_str=model_str,$
                 models_dir=dir_models, rtfaceon=rtfaceon, one_comp_dust=one_comp_dust, $
@@ -200,7 +200,7 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
 
   nsnap = n_elements(filename)
 
-  print, 'SEDM2_CELL_SPEC: number of snapshots to process',nsnap
+  print, 'SEDM2_CELL_SPEC_STAR_AGE: number of snapshots to process',nsnap
 
 ;;------------------------------------------------------------------
 ;; Pre-computations
@@ -266,7 +266,7 @@ PRO SEDM2_CELL_SPEC, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset, cell_y_
      filename_short = (strsplit(tmp,'.',/extract))[0]
      str_snap = (strsplit(filename_short,'_',/extract))[1] ;don't use i as could be only doing a single snapshot
 
-     print, 'SEDM2_CELL_SPEC building spectrum for snapshot:'+str_snap
+     print, 'SEDM2_CELL_SPEC_STAR_AGE building spectrum for snapshot:'+str_snap
  ;;-- make a directory for each data cube.
      if KEYWORD_SET(cir_fib) then begin
        data_cube_dir = "DataCube"+outstr+'_'+str_snap+string(file_style)+'_cir_radius_'+string(fib_radius, form='(F0.2)' )

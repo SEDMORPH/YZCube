@@ -105,50 +105,15 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
 
   nsnap_total = n_elements(file_search(dir_in+'snap_*.hdf5'))
 
-;;------------------------------------------------------------------
-;; Create SFHs for all gas and star particles (stored, only run once)
-;;------------------------------------------------------------------
-
-;if n_elements(file_search(dir_in+'*_gassfh.sav')) lt nsnap_total
-
-  if keyword_set(gassfh) then $ ;only compute if they are not all there
-     SEDM2_GASSFH, fileseq, dir_IN, models_dir=dir_models, model_str = model_str
-
-;;------------------------------------------------------------------
-;; Create output files for Hyperion
-;;------------------------------------------------------------------
-  if keyword_set(hyperion) then SEDM2_HYP_OUTPUT, fileseq, dir_models, indir=dir_in, outdir=dir_out
 
 ;;------------------------------------------------------------------
 ;; Calculate centers of the two halo for all snapshots
 ;;------------------------------------------------------------------
   if KEYWORD_SET(centerslist) then SEDM2_centerslist, fileseq, indir=dir_in, outdir=dir_in
 
-
-;;------------------------------------------------------------------
-;; Create mock SDSS images
-;;------------------------------------------------------------------
-
-  if keyword_Set(sdssimage) then begin
-     if redshift eq 0 then message, 'Redshift must be >0 to make an image'
-
-     filterlist = 'sdss.lis'
-     if n_elements(imagesize) eq 0 then imagesize=1.
-
-     SEDM2_sdssimage, dir_in, dir_out, dir_filters,dir_code,filterlist, redshift, tauv,mu_d, imagesize,$
-                      snap = snapID, model_str=model_str, $
-                      models_dir=dir_models,rotate_seed=rotate_seed, faceon=faceon,$
-                      one_comp_dust=one_comp_dust
-
-  endif
-
-
 ;;------------------------------------------------------------------
 ;; Create total optical spectra
 ;;------------------------------------------------------------------
-
-  if keyword_Set(spectra) then SEDM2_spec, dir_in, dir_out,tauv,mu_d, $
-                                           snap = snapID, model_str=model_str, models_dir=dir_models, one_comp_dust=one_comp_dust
 
   if keyword_Set(spec_star_age) then SEDM2_spec_star_age, dir_in, dir_out,tauv,mu_d, $
                                          snap = snapID, model_str=model_str, models_dir=dir_models, with_metal=with_metal
@@ -157,16 +122,12 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
 ;; Create  optical spectra for a cell
 ;;------------------------------------------------------------------
 
- if keyword_Set(cell_spectra) then SEDM2_cell_spec, dir_in, dir_out,tauv,mu_d,redshift,  cell_x_offset, cell_y_offset,$
+ if keyword_Set(cell_spectra) then SEDM2_CELL_SPEC_STAR_AGE, dir_in, dir_out,tauv,mu_d,redshift,  cell_x_offset, cell_y_offset,$
     					                            cell_size=cell_size, cir_fib=cir_fib, fib_radius=fib_radius, arcsec=arcsec, $
                                           snap = snapID, style = spec_style, rtfaceon=rtfaceon, model_str=model_str, models_dir=dir_models,$
                                           one_comp_dust=one_comp_dust, with_metal=with_metal, with_PSF=with_PSF, dir_PSF_weight=dir_PSF_weight,$
                                           plot_cell_spec=plot_cell_spec
 
-;;------------------------------------------------------------------
-;; Create spectral indices
-;;------------------------------------------------------------------
-  if keyword_Set(spec_inds) then sedm2_measure_spec_inds, fileseq, dir_in, dir_out, snap=snapID
 
 ;;------------------------------------------------------------------
 ;; Create spectral indices
@@ -175,24 +136,6 @@ PRO SEDM2_RUN, fileseq, snapID = snapID, redshift=redshift, tauv=tauv, mu_d = mu
   if keyword_Set(pca) then SEDM2_pca, dir_in, dir_out, tauv, mu_d, dir_pca_data, one_comp_dust=one_comp_dust, style=spec_style, with_metal=with_metal;# snap = snapID
 
 
-
-;;------------------------------------------------------------------
-;; Create movies: this relies on image and SED files already being made
-;;------------------------------------------------------------------
-
-  ;;-- SFR movie
-  if keyword_set(sfrmovie) then SEDM2_sfrmovie, dir_in, dir_out
-  if keyword_set(sedm_mocksdssimage_movie) then SEDM_MOCKSDSSIMAGE_MOVIE, dir_in, dir_out, redshift, tauv, mu_d,hubparam=hubparam,noimage=noimage,imagesize=imagesize,ashapefile=ashapefile
-
-  ;;-- SDSS image movie
-  if keyword_set(sdssmovie) then begin
-     if n_elements(imagesize) eq 0 then imagesize=1.
-     if n_elements(movieorientation) eq 0 then movieorientation=0 ;face-on
-
-     SEDM2_sdssmovie, dir_in, dir_out, redshift, tauv, mu_d,imagesize, movieorientation, one_comp_dust=one_comp_dust;
-  endif
-
-  ;;-- optical spectra movies
 
 
 
