@@ -95,7 +95,7 @@ def main(z):
     """
     save_data = np.c_[IFU_fib_x_kpc, IFU_fib_y_kpc, IFU_fib_x1_kpc, IFU_fib_y1_kpc, IFU_fib_x2_kpc, IFU_fib_y2_kpc] 
     filename = 'fiber_location_kpc_at_z%0.3f.txt' %z
-    np.savetxt(filename, save_data, fmt='%12.5f', header=header)
+    np.savetxt(filename, save_data, fmt='%9.2f', header=header)
 
 if __name__ == "__main__":
     main(sys.argv[1])

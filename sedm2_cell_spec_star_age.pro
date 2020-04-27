@@ -361,7 +361,7 @@ PRO SEDM2_CELL_SPEC_STAR_AGE, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset
 ;;-- fill up ind_ssp star structures
      if i eq 0 then plot=1 else plot=0
      if not KEYWORD_SET(plot_cell_spec) then plot=0
-     if noldstars gt 0 then SEDM2_BUILDSED, age_ssp, stars, oldstars_minid, snap_time,plot=plot
+     if noldstars gt 0 then SEDM2_BUILDSED, age_ssp, stars, oldstars_minid, snap_time
 
 
     ;;-- old stars

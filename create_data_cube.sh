@@ -3,7 +3,7 @@ shopt -s expand_aliases #allow the alias to work
 # setup idl environment
 # /export/data/apps/idl85/envi53/bin/envi_setup.bash
 
-fileseq="2xSc_07_EC_BH_vw1e4_ReposNoRFBNoRP"
+fileseq="2xSc_13_EC_BH_vw1e4_ReposNoRFBNoRP"
 snapID=151
 redshift=0.04
 spec_style="star_age"
@@ -54,15 +54,16 @@ do
     if [ $idl_count -ge 4 ]
     then
         echo "IDL ongoing"
-        sleep 5
+        sleep 3
     else
         echo "IDL done! Jump out!"
         break
     fi
 done
-python make_datacube_from_RSS_fits.py $fileseq $snapID style="$spec_style"  tauv=$tauv faceon=$rtfaceon with_metal=$with_metal
+sleep 60
+python make_datacube_from_RSS_fits.py $fileseq $snapID style="$spec_style"  tauv=$tauv faceon=$rtfaceon with_metal=$with_metal with_PSF=$with_PSF
 
-#other test
+# test global spectra and pca
 
 idl -e "sedm2_run, '$fileseq', /spec_star_age, /with_metal"
-idl -e "sedm2_run, '$fileseq', style='star_age', /pca, /with_metal"
+idl -e "sedm2_run, '$fileseq', spec_style='star_age', /pca, /with_metal"

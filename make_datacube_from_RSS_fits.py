@@ -229,10 +229,10 @@ def main(fileseq, snap, z =0.04, style='star_age',tauv=1.0, mu = 0.3,
     z = float(z)
     tauv=float(tauv)
     mu = float(mu)
-    faceon = bool(faceon)
-    one_comp_dust = bool(one_comp_dust)
-    with_metal = bool(with_metal)
-    with_PSF = bool(with_PSF)
+    faceon = bool(int(faceon))
+    one_comp_dust = bool(int(one_comp_dust))
+    with_metal = bool(int(with_metal))
+    with_PSF = bool(int(with_PSF))
 
 
 

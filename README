@@ -6,7 +6,7 @@ Yirui Zheng. April-2020
 The code is run from sedm2_run.pro
 Keywords need to be set for the code to do anything
 
-/CENTERSLIST = compute and store the centers of the two halos for all snapshots. This needs to be done before creating RSS, which use the centers to point the mock IFU. If mock galaxies contains black holes, use the BH position as the galaxy center. Ohterwise, use histogram to find the distribution of stars, and use the peak position as the galaxy center.
+/CENTERSLIST = compute and store the centers of the two halos for all snapshots. This needs to be done before creating RSS, which use the centers to point the mock IFU. If mock galaxies contains black holes, use the BH position as the galaxy center. Ohterwise, use histogram to find the distribution of halo particles, and use the peak position as the galaxy center.
 
 /spec_star_age = create total optical spectra for simulated galaxies withing the algorithm described in Y.Zheng+2020
 

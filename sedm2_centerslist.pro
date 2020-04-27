@@ -63,7 +63,6 @@ PRO SEDM2_CENTERSLIST, fileseq, indir=indir, outdir=outdir, have_BH=have_BH
 
   for i=0,Nsnap-1 do begin
 
-
      if KEYWORD_SET(have_BH) then begin
 	 SEDM2_READSNAP, indir+filename[i], BHs=BHs,/getBH, /no_sfr_log
 	 nBH = n_elements(BHs.id)
