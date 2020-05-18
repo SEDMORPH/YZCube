@@ -28,7 +28,7 @@ def main(z):
     
 
     try:
-        data=np.genfromtxt(raw_file, dtype=None, skip_header=69)
+        data=np.genfromtxt(raw_file, dtype=None, skip_header=66)
     except:
         print "Please download a MaNGA harness metrology file and put it under the same folder"
         print "The one we used is ma134-56995-1.par, you could find it here:"
