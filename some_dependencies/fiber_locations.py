@@ -33,6 +33,7 @@ def main(z):
         print "Please download a MaNGA harness metrology file and put it under the same folder"
         print "The one we used is ma134-56995-1.par, you could find it here:"
         print "https://svn.sdss.org/public/repo/manga/mangacore/tags/v1_6_2/metrology/ma134/ma134-56995-1.par"
+        sys.exit()
 
 
     n_fib = len(data)
