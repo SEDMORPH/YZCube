@@ -23,11 +23,16 @@ def main(z):
 # D. Law+2015 figure 6 
 # https://iopscience.iop.org/article/10.1088/0004-6256/150/1/19 
     mm_to_arcsec = 16.6   # 1 mm equals to 16.6 arcsec
-    # A raw file given by D.Law, mjd 56995
-    raw_file= 'ma134-56995-2.par'
+    # MaNGA 
+    raw_file= 'ma134-56995-1.par'
+    
 
-
-    data=np.genfromtxt(raw_file, dtype=None, skip_header=69)
+    try:
+        data=np.genfromtxt(raw_file, dtype=None, skip_header=69)
+    except:
+        print "Please download a MaNGA harness metrology file and put it under the same folder"
+        print "The one we used is ma134-56995-1.par, you could find it here:"
+        print "https://svn.sdss.org/public/repo/manga/mangacore/tags/v1_6_2/metrology/ma134/ma134-56995-1.par"
 
 
     n_fib = len(data)
