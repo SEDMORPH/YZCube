@@ -1,8 +1,6 @@
 ### These are codes for the creation of MaNGA-like IFU datacube for simulated galaxies.
 If you would like to use any of this repository, please cite our paper: https://arxiv.org/abs/2005.14112
 =====================================
-
-
 Yirui Zheng. April-2020
 
 The code is run from sedm2_run.pro
