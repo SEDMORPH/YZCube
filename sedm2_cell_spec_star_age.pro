@@ -123,6 +123,7 @@ PRO SEDM2_CELL_SPEC_STAR_AGE, dir_in, dir_out, tauv,mu_d,redshift, cell_x_offset
 ;                  "star_age" --> star_age method, --> the methods descriped in Y.Zheng+2020
 ;                   also support _eagle and _eagle_minus, but these are not well tested yet.(20-Aug-2018)
 ;                    _eagle and _eagle_minus --> turn out to be useless, removed
+;                 Need tidy up the code further
 ; one_comp_dust: use tau_old for all stars, i.e. tau_young = tau_old
 ;_
 
