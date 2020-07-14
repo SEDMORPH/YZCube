@@ -35,3 +35,6 @@ You only need to run step 2&3 for once if you do not change the redshift
 > idl -e "sedm2_run, '2xSc_07_EC_BH_vw1e4_ReposNoRFBNoRP',snap=151, cell_x_offset=2.97,cell_y_offset=4.12,/cell_spectra, fib_radius=0.79, tauv=1.0, spec_style='star_age',/with_metal,/with_PSF,/cir_fib"
 This example specify the fileseq, snapshot ID, center of fiber, radius of the fiber, tauv, create star_age style spectrum, considering metallicity and PSF effect, using circular fiber
 5. make datacube from RSS
+
+
+Contact me by yz69@st-andrews.ac.uk or zyr9040@mail.ustc.edu.cn
