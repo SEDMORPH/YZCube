@@ -291,11 +291,6 @@ def main(fileseq, snap, z =0.04, style='star_age',tauv=1.0, mu = 0.3,
 
 
 # In[10]:
-
-
-    hdr
-
-
 # In[11]:
 
 
