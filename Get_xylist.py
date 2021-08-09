@@ -22,8 +22,12 @@ def main(get_x=False, get_y=False,real_fibpos=False,  cell_size=1., xymin= -5., 
         xylist= all_pos[:, col_idx]
 
     else:
-        Nbin = int((xymax - xymin)/cell_size)+1
-        xylist= np.linspace(xymin, xymax, Nbin)
+        #  Nbin = int((xymax - xymin)/cell_size)+1
+        #  xylist= np.linspace(xymin, xymax, Nbin)
+
+        # new solution to match the output of datacubes
+        Nbin = int(np.ceil( (xymax - xymin)/ cell_size ))+1
+        xylist = np.arange(Nbin)*cell_size+xymin
 
     # print the results
     for i in xylist:
